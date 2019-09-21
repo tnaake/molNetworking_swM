@@ -1,4 +1,6 @@
+################################################################################
 ################################## functions ###################################
+################################################################################
 
 ## functions to create MS/MS features from corresponding files that were 
 ## collected under different collision energies
@@ -197,128 +199,284 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50), 
 library(MSnbase)
 library(igraph)
 
+################################################################################
 ################################## workflow ####################################
+################################################################################
 ## Maize MS2: create a similarity network
-setwd("/home/thomas/Projects/Shijuan_MS2_Maize/")
+setwd("/home/thomas/Projects/molNetworking_swM/data_MS2/neg")
 
 ## 1) 
+################################### negative ###################################
 ## load file that contains alignment information
-aln <- read.table("PeakID_0_2019820915.txt", sep="\t", fill=TRUE, skip=4, header=TRUE, stringsAsFactors=FALSE, quote="\"")
+aln_neg <- read.table("PeakID_0_2019822154.txt", sep="\t", fill=TRUE, skip=4, 
+                      header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## truncate file
-cols_keep <- c("Alignment.ID", "Average.Rt.min.", "Average.Mz", "Metabolite.name", "Adduct.type",
-               "mixMK.ddms2.CID30", "mixMK.ddms2.CID40", "mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", 
-               "mixMK.ddms2.HCD50", "mixML.ddms2.CID30", "mixML.ddms2.CID40", "mixML.ddms2.HCD30",             
-               "mixML.ddms2.HCD40", "mixML.ddms2.HCD50")
-aln <- aln[, cols_keep]
+cols_keep <- c("Alignment.ID", "Average.Rt.min.", "Average.Mz", 
+    "Metabolite.name", "Adduct.type", 
+    "mixMK.ddms2.CID30", "mixMK.ddms2.CID40", 
+    "mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50", 
+    "mixML.ddms2.CID30", "mixML.ddms2.CID40", 
+    "mixML.ddms2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50")
+aln_neg <- aln_neg[, cols_keep]
 ## keep only these rows that have alignment information
-inds_remove <- apply(aln[,cols_keep[-c(1:5)]], 1, function(x) all(x == "-2"))
-aln <- aln[!inds_remove, ]
-## remove lines that are contain any NA
-aln <- aln[!apply(aln, 1, function(x) any(is.na(x))), ]
+inds_remove <- apply(aln_neg[,cols_keep[-c(1:5)]], 1, function(x) all(x == "-2"))
+aln_neg <- aln_neg[!inds_remove, ]
+## remove lines that contain any NA
+aln_neg <- aln_neg[!apply(aln_neg, 1, function(x) any(is.na(x))), ]
 
 ## 2) 
 ## load files that contain spectra, do this for each sample individually
 ## for CID only 30 and 40 eV available, for HCD 30, 40 and 50 eV available
-## for kernel
-## CID
-MK_cid30 <- read.table("mixMK-ddms2-CID30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-MK_cid40 <- read.table("mixMK-ddms2-CID40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-## HCD
-MK_hcd30 <- read.table("mixMK-ddms2-HCD30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-MK_hcd40 <- read.table("mixMK-ddms2-HCD40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-MK_hcd50 <- read.table("mixMK-ddms2-HCD50.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
-## for leaf
-## CID
-ML_cid30 <- read.table("mixML-ddms2-CID30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-ML_cid40 <- read.table("mixML-ddms2-CID40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-## HCD
-ML_hcd30 <- read.table("mixML-ddms2-HCD30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-ML_hcd40 <- read.table("mixML-ddms2-HCD40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-ML_hcd50 <- read.table("mixML-ddms2-HCD50.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for kernel CID
+MK_cid30_neg <- read.table("mixMK-ddms2-CID30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_cid40_neg <- read.table("mixMK-ddms2-CID40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for kernel HCD
+MK_hcd30_neg <- read.table("mixMK-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_hcd40_neg <- read.table("mixMK-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_hcd50_neg <- read.table("mixMK-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
-## for sweet maize
-## CID
-swM_cid30 <- read.table("QC-ddms-CID30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-swM_cid40 <- read.table("QC-ddms-CID40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-## HCD
-swM_hcd30 <- read.table("QC-ddms-HCD30.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-swM_hcd40 <- read.table("QC-ddms-HCD40.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
-swM_hcd50 <- read.table("QC-ddms-HCD50.txt", sep="\t", fill=TRUE, header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for leaf CID
+ML_cid30_neg <- read.table("mixML-ddms2-CID30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_cid40_neg <- read.table("mixML-ddms2-CID40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for leaf HCD
+ML_hcd30_neg <- read.table("mixML-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_hcd40_neg <- read.table("mixML-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_hcd50_neg <- read.table("mixML-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+
+## for sweet maize CID
+swM_cid30_neg <- read.table("QC-ddms-CID30.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_cid40_neg <- read.table("QC-ddms-CID40.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for sweet maize HCD
+swM_hcd30_neg <- read.table("QC-ddms-HCD30.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_hcd40_neg <- read.table("QC-ddms-HCD40.txt", sep="\t", fill=TRUE,
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_hcd50_neg <- read.table("QC-ddms-HCD50.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+
+################################### positive ###################################
+## load file that contains alignment information
+aln_pos <- read.table("PeakID_0_2019822154.txt", sep="\t", fill=TRUE, 
+                      skip=4, header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## truncate file
+cols_keep <- c("Alignment.ID", "Average.Rt.min.", "Average.Mz", 
+    "Metabolite.name", "Adduct.type",
+    "mixMK.ddms2.CID30", "mixMK.ddms2.CID40", 
+    "mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50", 
+    "mixML.ddms2.CID30", "mixML.ddms2.CID40", 
+    "mixML.ddms2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50")
+aln_pos <- aln_pos[, cols_keep]
+## keep only these rows that have alignment information
+inds_remove <- apply(aln_pos[,cols_keep[-c(1:5)]], 1, function(x) all(x == "-2"))
+aln_pos <- aln_pos[!inds_remove, ]
+## remove lines that contain any NA
+aln_pos <- aln_pos[!apply(aln_pos, 1, function(x) any(is.na(x))), ]
+
+## 2) 
+## load files that contain spectra, do this for each sample individually
+## for CID only 30 and 40 eV available, for HCD 30, 40 and 50 eV available
+## for kernel CID
+MK_cid30_pos <- read.table("mixMK-ddms2-CID30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_cid40_pos <- read.table("mixMK-ddms2-CID40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for kernel HCD
+MK_hcd30_pos <- read.table("mixMK-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_hcd40_pos <- read.table("mixMK-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+MK_hcd50_pos <- read.table("mixMK-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+
+## for leaf CID
+ML_cid30_pos <- read.table("mixML-ddms2-CID30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_cid40_pos <- read.table("mixML-ddms2-CID40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for leaf HCD
+ML_hcd30_pos <- read.table("mixML-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_hcd40_pos <- read.table("mixML-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+ML_hcd50_neg <- read.table("mixML-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
+                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+
+## for sweet maize CID
+swM_cid30_neg <- read.table("QC-ddms-CID30.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_cid40_neg <- read.table("QC-ddms-CID40.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+## for sweet maize HCD
+swM_hcd30_neg <- read.table("QC-ddms-HCD30.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_hcd40_neg <- read.table("QC-ddms-HCD40.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+swM_hcd50_neg <- read.table("QC-ddms-HCD50.txt", sep="\t", fill=TRUE, 
+                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+
+
 
 ## 3) 
 ## truncate files and keep only columns that are of interest
-cols_keep <- c("PeakID", "Title", "RT.min.", "Precursor.m.z", "Height", "Area", "MetaboliteName", "AdductIon", "Isotope", "S.N", "MSMS.spectrum")
+cols_keep <- c("PeakID", "Title", "RT.min.", "Precursor.m.z", "Height", 
+    "Area", "MetaboliteName", "AdductIon", "Isotope", "S.N", "MSMS.spectrum")
 
-MK_cid30 <- MK_cid30[MK_cid30[, "MSMS.spectrum"] != "", cols_keep]
-MK_cid40 <- MK_cid40[MK_cid40[, "MSMS.spectrum"] != "", cols_keep]
-MK_hcd30 <- MK_hcd30[MK_hcd30[, "MSMS.spectrum"] != "", cols_keep]
-MK_hcd40 <- MK_hcd40[MK_hcd40[, "MSMS.spectrum"] != "", cols_keep]
-MK_hcd50 <- MK_hcd50[MK_hcd50[, "MSMS.spectrum"] != "", cols_keep]
-ML_cid30 <- ML_cid30[ML_cid30[, "MSMS.spectrum"] != "", cols_keep]
-ML_cid40 <- ML_cid40[ML_cid40[, "MSMS.spectrum"] != "", cols_keep]
-ML_hcd30 <- ML_hcd30[ML_hcd30[, "MSMS.spectrum"] != "", cols_keep]
-ML_hcd40 <- ML_hcd40[ML_hcd40[, "MSMS.spectrum"] != "", cols_keep]
-ML_hcd50 <- ML_hcd50[ML_hcd50[, "MSMS.spectrum"] != "", cols_keep]
-swM_cid30 <- swM_cid30[swM_cid30[, "MSMS.spectrum"] != "", cols_keep]
-swM_cid40 <- swM_cid40[swM_cid40[, "MSMS.spectrum"] != "", cols_keep]
-swM_hcd30 <- swM_hcd30[swM_hcd30[, "MSMS.spectrum"] != "", cols_keep]
-swM_hcd40 <- swM_hcd40[swM_hcd40[, "MSMS.spectrum"] != "", cols_keep]
-swM_hcd50 <- swM_hcd50[swM_hcd50[, "MSMS.spectrum"] != "", cols_keep]
+## neg
+MK_cid30_neg <- MK_cid30_neg[MK_cid30_neg[, "MSMS.spectrum"] != "", cols_keep]
+MK_cid40_neg <- MK_cid40_neg[MK_cid40_neg[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd30_neg <- MK_hcd30_neg[MK_hcd30_neg[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd40_neg <- MK_hcd40_neg[MK_hcd40_neg[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd50_neg <- MK_hcd50_neg[MK_hcd50_neg[, "MSMS.spectrum"] != "", cols_keep]
+ML_cid30_neg <- ML_cid30_neg[ML_cid30_neg[, "MSMS.spectrum"] != "", cols_keep]
+ML_cid40_neg <- ML_cid40_neg[ML_cid40_neg[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd30_neg <- ML_hcd30_neg[ML_hcd30_neg[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd40_neg <- ML_hcd40_neg[ML_hcd40_neg[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd50_neg <- ML_hcd50_neg[ML_hcd50_neg[, "MSMS.spectrum"] != "", cols_keep]
+swM_cid30_neg <- swM_cid30_neg[swM_cid30_neg[, "MSMS.spectrum"] != "", cols_keep]
+swM_cid40_neg <- swM_cid40_neg[swM_cid40_neg[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd30_neg <- swM_hcd30_neg[swM_hcd30_neg[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd40_neg <- swM_hcd40_neg[swM_hcd40_neg[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd50_neg <- swM_hcd50_neg[swM_hcd50_neg[, "MSMS.spectrum"] != "", cols_keep]
+
+## pos
+MK_cid30_pos <- MK_cid30_pos[MK_cid30_pos[, "MSMS.spectrum"] != "", cols_keep]
+MK_cid40_pos <- MK_cid40_pos[MK_cid40_pos[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd30_pos <- MK_hcd30_pos[MK_hcd30_pos[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd40_pos <- MK_hcd40_pos[MK_hcd40_pos[, "MSMS.spectrum"] != "", cols_keep]
+MK_hcd50_pos <- MK_hcd50_pos[MK_hcd50_pos[, "MSMS.spectrum"] != "", cols_keep]
+ML_cid30_pos <- ML_cid30_pos[ML_cid30_pos[, "MSMS.spectrum"] != "", cols_keep]
+ML_cid40_pos <- ML_cid40_pos[ML_cid40_pos[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd30_pos <- ML_hcd30_pos[ML_hcd30_pos[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd40_pos <- ML_hcd40_pos[ML_hcd40_pos[, "MSMS.spectrum"] != "", cols_keep]
+ML_hcd50_pos <- ML_hcd50_pos[ML_hcd50_pos[, "MSMS.spectrum"] != "", cols_keep]
+swM_cid30_pos <- swM_cid30_pos[swM_cid30_pos[, "MSMS.spectrum"] != "", cols_keep]
+swM_cid40_pos <- swM_cid40_pos[swM_cid40_pos[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd30_pos <- swM_hcd30_pos[swM_hcd30_pos[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd40_pos <- swM_hcd40_pos[swM_hcd40_pos[, "MSMS.spectrum"] != "", cols_keep]
+swM_hcd50_pos <- swM_hcd50_pos[swM_hcd50_pos[, "MSMS.spectrum"] != "", cols_keep]
 
 ## 4) 
 ## truncate files that they only contain the spectra that are aligned
 ## (spectra that are present in aln)
-## kernel CID
-MK_cid30 <- MK_cid30[MK_cid30[, "PeakID"] %in% aln[, "mixMK.ddms2.CID30"],]
-MK_cid40 <- MK_cid40[MK_cid40[, "PeakID"] %in% aln[, "mixMK.ddms2.CID40"],]
-## kernel HCD
-MK_hcd30 <- MK_hcd30[MK_hcd30[, "PeakID"] %in% aln[, "mixMK.ddm2.HCD30"],]
-MK_hcd40 <- MK_hcd40[MK_hcd40[, "PeakID"] %in% aln[, "mixMK.ddms2.HCD40"],]
-MK_hcd50 <- MK_hcd50[MK_hcd50[, "PeakID"] %in% aln[, "mixMK.ddms2.HCD50"],]
 
-## leaf CID
-ML_cid30 <- ML_cid30[ML_cid30[, "PeakID"] %in% aln[, "mixML.ddms2.CID30"],]
-ML_cid40 <- ML_cid40[ML_cid40[, "PeakID"] %in% aln[, "mixML.ddms2.CID40"],]
-## leaf HCD
-ML_hcd30 <- ML_hcd30[ML_hcd30[, "PeakID"] %in% aln[, "mixML.ddm2.HCD30"],]
-ML_hcd40 <- ML_hcd40[ML_hcd40[, "PeakID"] %in% aln[, "mixML.ddms2.HCD40"],]
-ML_hcd50 <- ML_hcd50[ML_hcd50[, "PeakID"] %in% aln[, "mixML.ddms2.HCD50"],]
+## neg
+## kernel 
+MK_cid30_neg <- MK_cid30_neg[MK_cid30_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.CID30"],]
+MK_cid40_neg <- MK_cid40_neg[MK_cid40_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.CID40"],]
+MK_hcd30_neg <- MK_hcd30_neg[MK_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddm2.HCD30"],]
+MK_hcd40_neg <- MK_hcd40_neg[MK_hcd40_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.HCD40"],]
+MK_hcd50_neg <- MK_hcd50_neg[MK_hcd50_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.HCD50"],]
+
+## leaf 
+ML_cid30_neg <- ML_cid30_neg[ML_cid30_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.CID30"],]
+ML_cid40_neg <- ML_cid40_neg[ML_cid40_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.CID40"],]
+ML_hcd30_neg <- ML_hcd30_neg[ML_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixML.ddm2.HCD30"],]
+ML_hcd40_neg <- ML_hcd40_neg[ML_hcd40_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.HCD40"],]
+ML_hcd50_neg <- ML_hcd50_neg[ML_hcd50_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.HCD50"],]
 
 ## sweet maize
-swM_cid30 <- swM_cid30[swM_cid30[, "PeakID"] %in% aln[, "QC.ddms.CID30"],]
-swM_cid40 <- swM_cid40[swM_cid40[, "PeakID"] %in% aln[, "QC.ddms.CID40"],]
-swM_hcd30 <- swM_hcd30[swM_hcd30[, "PeakID"] %in% aln[, "QC.ddms.HCD30"],]
-swM_hcd40 <- swM_hcd40[swM_hcd40[, "PeakID"] %in% aln[, "QC.ddms.HCD40"],]
-swM_hcd50 <- swM_hcd50[swM_hcd50[, "PeakID"] %in% aln[, "QC.ddms.HCD50"],]
+swM_cid30_neg <- swM_cid30_neg[swM_cid30_neg[, "PeakID"] %in% aln_neg[, "QC.ddms.CID30"],]
+swM_cid40_neg <- swM_cid40_neg[swM_cid40_neg[, "PeakID"] %in% aln_neg[, "QC.ddms.CID40"],]
+swM_hcd30_neg <- swM_hcd30_neg[swM_hcd30_neg[, "PeakID"] %in% aln_neg[, "QC.ddms.HCD30"],]
+swM_hcd40_neg <- swM_hcd40_neg[swM_hcd40_neg[, "PeakID"] %in% aln_neg[, "QC.ddms.HCD40"],]
+swM_hcd50_neg <- swM_hcd50_neg[swM_hcd50_neg[, "PeakID"] %in% aln_neg[, "QC.ddms.HCD50"],]
+
+
+## pos
+## kernel 
+MK_cid30_pos <- MK_cid30_pos[MK_cid30_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.CID30"],]
+MK_cid40_pos <- MK_cid40_pos[MK_cid40_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.CID40"],]
+MK_hcd30_pos <- MK_hcd30_pos[MK_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddm2.HCD30"],]
+MK_hcd40_pos <- MK_hcd40_pos[MK_hcd40_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.HCD40"],]
+MK_hcd50_pos <- MK_hcd50_pos[MK_hcd50_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.HCD50"],]
+
+## leaf 
+ML_cid30_pos <- ML_cid30_pos[ML_cid30_pos[, "PeakID"] %in% aln_pos[, "mixML.ddms2.CID30"],]
+ML_cid40_pos <- ML_cid40_pos[ML_cid40_pos[, "PeakID"] %in% aln_pos[, "mixML.ddms2.CID40"],]
+ML_hcd30_pos <- ML_hcd30_pos[ML_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixML.ddm2.HCD30"],]
+ML_hcd40_pos <- ML_hcd40_pos[ML_hcd40_pos[, "PeakID"] %in% aln_pos[, "mixML.ddms2.HCD40"],]
+ML_hcd50_pos <- ML_hcd50_pos[ML_hcd50_pos[, "PeakID"] %in% aln_pos[, "mixML.ddms2.HCD50"],]
+
+## sweet maize
+swM_cid30_pos <- swM_cid30_pos[swM_cid30_pos[, "PeakID"] %in% aln_pos[, "QC.ddms.CID30"],]
+swM_cid40_pos <- swM_cid40_pos[swM_cid40_pos[, "PeakID"] %in% aln_pos[, "QC.ddms.CID40"],]
+swM_hcd30_pos <- swM_hcd30_pos[swM_hcd30_pos[, "PeakID"] %in% aln_pos[, "QC.ddms.HCD30"],]
+swM_hcd40_pos <- swM_hcd40_pos[swM_hcd40_pos[, "PeakID"] %in% aln_pos[, "QC.ddms.HCD40"],]
+swM_hcd50_pos <- swM_hcd50_pos[swM_hcd50_pos[, "PeakID"] %in% aln_pos[, "QC.ddms.HCD50"],]
 
 ## 5) 
 ## assemble spectra
-assembly_MK_cid <- assemblySpectra(spectra=list(MK_cid30, MK_cid40), 
-            aln=aln, cols_aln=c("mixMK.ddm2.CID30", "mixMK.ddms2.CID40"),
-            sample_name="MK_CID")
-assembly_MK_hcd <- assemblySpectra(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), 
-    aln=aln, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
+
+## neg
+assembly_MK_cid_neg <- assemblySpectra(spectra=list(MK_cid30_neg, MK_cid40_neg), 
+    aln=aln_neg, cols_aln=c("mixMK.ddm2.CID30", "mixMK.ddms2.CID40"),
+    sample_name="MK_CID")
+assembly_MK_hcd_neg <- assemblySpectra(spectra=list(MK_hcd30_neg, MK_hcd40_neg, MK_hcd50_neg), 
+    aln=aln_neg, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
     sample_name="MK_HCD")
-assembly_ML_cid <- assemblySpectra(spectra=list(ML_cid30, ML_cid40), 
-    aln=aln, cols_aln=c("mixML.ddm2.CID30", "mixML.ddms2.CID40"),
+assembly_ML_cid_neg <- assemblySpectra(spectra=list(ML_cid30_neg, ML_cid40_neg), 
+    aln=aln_neg, cols_aln=c("mixML.ddm2.CID30", "mixML.ddms2.CID40"),
     sample_name="ML_CID")
-assembly_ML_hcd <- assemblySpectra(spectra=list(ML_hcd30, ML_hcd40, ML_hcd50), 
-    aln=aln, cols_aln=c("mixML.ddm2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
+assembly_ML_hcd_neg <- assemblySpectra(spectra=list(ML_hcd30_neg, ML_hcd40_neg, ML_hcd50_neg), 
+    aln=aln_neg, cols_aln=c("mixML.ddm2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
     sample_name="ML_HCD")
-assembly_swM_cid <- assemblySpectra(spectra=list(swM_cid30, swM_cid40), 
-    aln=aln, cols_aln=c("QC.ddm2.CID30", "QC.ddms2.CID40"),
+assembly_swM_cid_neg <- assemblySpectra(spectra=list(swM_cid30_neg, swM_cid40_neg), 
+    aln=aln_neg, cols_aln=c("QC.ddm2.CID30", "QC.ddms2.CID40"),
     sample_name="swM_CID")
-assembly_swM_hcd <- assemblySpectra(spectra=list(swM_hcd30, swM_hcd40, swM_hcd50), 
-    aln=aln, cols_aln=c("QC.ddms.HCD30", "QC.ddms.HCD40", "QC.ddms.HCD50"),
+assembly_swM_hcd_neg <- assemblySpectra(spectra=list(swM_hcd30_neg, swM_hcd40_neg, swM_hcd50_neg), 
+    aln=aln_neg, cols_aln=c("QC.ddms.HCD30", "QC.ddms.HCD40", "QC.ddms.HCD50"),
     sample_name="swM_HCD")
 
-save(assembly_MK_cid, file="ms2_assembly_MK_cid.RData")
-save(assembly_MK_hcd, file="ms2_assembly_MK_hcd.RData")
-save(assembly_ML_cid, file="ms2_assembly_ML_cid.RData")
-save(assembly_ML_hcd, file="ms2_assembly_ML_hcd.RData")
-save(assembly_swM_cid, file="ms2_assembly_swM_cid.RData")
-save(assembly_swM_hcd, file="ms2_assembly_swM_hcd.RData")
+## save
+setwd()
+save(assembly_MK_cid_neg, file="ms2_assembly_MK_cid_neg.RData")
+save(assembly_MK_hcd_neg, file="ms2_assembly_MK_hcd_neg.RData")
+save(assembly_ML_cid_neg, file="ms2_assembly_ML_cid_neg.RData")
+save(assembly_ML_hcd_neg, file="ms2_assembly_ML_hcd_neg.RData")
+save(assembly_swM_cid_neg, file="ms2_assembly_swM_cid_neg.RData")
+save(assembly_swM_hcd_neg, file="ms2_assembly_swM_hcd_neg.RData")
+
+## pos
+assembly_MK_cid_pos <- assemblySpectra(spectra=list(MK_cid30_pos, MK_cid40_pos), 
+    aln=aln_pos, cols_aln=c("mixMK.ddm2.CID30", "mixMK.ddms2.CID40"),
+    sample_name="MK_CID")
+assembly_MK_hcd_pos <- assemblySpectra(spectra=list(MK_hcd30_pos, MK_hcd40_pos, MK_hcd50_pos), 
+    aln=aln_pos, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
+    sample_name="MK_HCD")
+assembly_ML_cid_pos <- assemblySpectra(spectra=list(ML_cid30_pos, ML_cid40_pos), 
+    aln=aln_pos, cols_aln=c("mixML.ddm2.CID30", "mixML.ddms2.CID40"),
+    sample_name="ML_CID")
+assembly_ML_hcd_pos <- assemblySpectra(spectra=list(ML_hcd30_pos, ML_hcd40_pos, ML_hcd50_pos), 
+    aln=aln_pos, cols_aln=c("mixML.ddm2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
+    sample_name="ML_HCD")
+assembly_swM_cid_pos <- assemblySpectra(spectra=list(swM_cid30_pos, swM_cid40_pos), 
+    aln=aln_pos, cols_aln=c("QC.ddm2.CID30", "QC.ddms2.CID40"),
+    sample_name="swM_CID")
+assembly_swM_hcd_pos <- assemblySpectra(spectra=list(swM_hcd30_pos, swM_hcd40_pos, swM_hcd50_pos), 
+    aln=aln_pos, cols_aln=c("QC.ddms.HCD30", "QC.ddms.HCD40", "QC.ddms.HCD50"),
+    sample_name="swM_HCD")
+
+## save
+setwd()
+save(assembly_MK_cid_pos, file="ms2_assembly_MK_cid_pos.RData")
+save(assembly_MK_hcd_pos, file="ms2_assembly_MK_hcd_pos.RData")
+save(assembly_ML_cid_pos, file="ms2_assembly_ML_cid_pos.RData")
+save(assembly_ML_hcd_pos, file="ms2_assembly_ML_hcd_pos.RData")
+save(assembly_swM_cid_pos, file="ms2_assembly_swM_cid_pos.RData")
+save(assembly_swM_hcd_pos, file="ms2_assembly_swM_hcd_pos.RData")
 
 
 ## 6) 
@@ -329,105 +487,155 @@ library(MSnbase)
 
 ## retrieve retention time, precursorMZ, m/z of peaks and corresponding 
 ## intensities from the assembled spectrum
-## kernel CID
-rt_MK_cid <- unlist(lapply(strsplit(names(assembly_MK_cid), split="_"), "[", 4))
-rt_MK_cid <- as.numeric(rt_MK_cid)
-prec_mz_MK_cid <- unlist(lapply(strsplit(names(assembly_MK_cid), split="_"), "[", 5))
-prec_mz_MK_cid <- as.numeric(prec_mz_MK_cid)
-mz_MK_cid <- lapply(assembly_MK_cid, function(x) x[,1])
-int_MK_cid <- lapply(assembly_MK_cid, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_MK_cid_l <- lapply(1:length(assembly_MK_cid), function(x) new("Spectrum2", 
-    rt=rt_MK_cid[x], precursorMz=prec_mz_MK_cid[x], 
-    mz=mz_MK_cid[[x]], intensity=int_MK_cid[[x]]))
-## kernel HCD
-rt_MK_hcd <- unlist(lapply(strsplit(names(assembly_MK_hcd), split="_"), "[", 4))
-rt_MK_hcd <- as.numeric(rt_MK_hcd)
-prec_mz_MK_hcd <- unlist(lapply(strsplit(names(assembly_MK_hcd), split="_"), "[", 5))
-prec_mz_MK_hcd <- as.numeric(prec_mz_MK_hcd)
-mz_MK_hcd <- lapply(assembly_MK_hcd, function(x) x[,1])
-int_MK_hcd <- lapply(assembly_MK_hcd, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_MK_hcd_l <- lapply(1:length(assembly_MK_hcd), function(x) new("Spectrum2", 
-            rt=rt_MK_hcd[x], precursorMz=prec_mz_MK_hcd[x], 
-            mz=mz_MK_hcd[[x]], intensity=int_MK_hcd[[x]]))
 
-## leaf CID
-rt_ML_cid <- unlist(lapply(strsplit(names(assembly_ML_cid), split="_"), "[", 4))
-rt_ML_cid <- as.numeric(rt_ML_cid)
-prec_mz_ML_cid <- unlist(lapply(strsplit(names(assembly_ML_cid), split="_"), "[", 5))
-prec_mz_ML_cid <- as.numeric(prec_mz_ML_cid)
-mz_ML_cid <- lapply(assembly_ML_cid, function(x) x[,1])
-int_ML_cid <- lapply(assembly_ML_cid, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_ML_cid_l <- lapply(1:length(assembly_ML_cid), function(x) new("Spectrum2", 
-    rt=rt_ML_cid[x], precursorMz=prec_mz_ML_cid[x], 
-    mz=mz_ML_cid[[x]], intensity=int_ML_cid[[x]]))
-## leaf HCD
-rt_ML_hcd <- unlist(lapply(strsplit(names(assembly_ML_hcd), split="_"), "[", 4))
-rt_ML_hcd <- as.numeric(rt_ML_hcd)
-prec_mz_ML_hcd <- unlist(lapply(strsplit(names(assembly_ML_hcd), split="_"), "[", 5))
-prec_mz_ML_hcd <- as.numeric(prec_mz_ML_hcd)
-mz_ML_hcd <- lapply(assembly_ML_hcd, function(x) x[,1])
-int_ML_hcd <- lapply(assembly_ML_hcd, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_ML_hcd_l <- lapply(1:length(assembly_ML_hcd), function(x) new("Spectrum2", 
-    rt=rt_ML_hcd[x], precursorMz=prec_mz_ML_hcd[x], 
-    mz=mz_ML_hcd[[x]], intensity=int_ML_hcd[[x]]))
+#' @name construct_Spectrum2
+#' @description The function `construct_Spectrum2` retrieves the relevant 
+#' information from the `assembly` (retention time of precursor, 
+#' m/z of precursor and m/z and intensities of the fragments) 
+#' and creates a list of `Spectrum2` objects.
+#' @param assembly
+#' @details 
+#' @usage construct_Spectrum2(assembly)
+#' @author Thomas Naake \email{thomasnaake@@googlemail.com}
+#' @return `list` of `Spectrum2` objects
+#' @examples 
+construct_Spectrum2 <- function(assembly) {
+    
+    ## get retention time
+    rt <- unlist(lapply(strsplit(names(assembly), split="_"), "[", 4))  
+    rt <- as.numeric(rt)
+    ## get precursor m/z
+    prec_mz <- unlist(lapply(strsplit(names(assembly), split="_"), "[", 5))
+    prec_mz <- as.numeric(prec_mz)
+    ## get m/z values and corresponding intensities
+    mz <- lapply(assembly, function(x) x[,1])
+    int <- lapply(assembly, function(x) x[,2])
+    ## create Spectrum2 objects with the corresponding information
+    lapply(1:length(assembly), function(x) new("Spectrum2", 
+        rt=rt[x], precursorMz=prec_mz[x], mz=mz[[x]], intensity=int[[x]]))
+    
+}
 
-## sweet maize CID
-rt_swM_cid <- unlist(lapply(strsplit(names(assembly_swM_cid), split="_"), "[", 4))
-rt_swM_cid <- as.numeric(rt_swM_cid)
-prec_mz_swM_cid <- unlist(lapply(strsplit(names(assembly_swM_cid), split="_"), "[", 5))
-prec_mz_swM_cid <- as.numeric(prec_mz_swM_cid)
-mz_swM_cid <- lapply(assembly_swM_cid, function(x) x[,1])
-int_swM_cid <- lapply(assembly_swM_cid, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_swM_cid_l <- lapply(1:length(assembly_swM_cid), function(x) new("Spectrum2", 
-                                                                  rt=rt_swM_cid[x], precursorMz=prec_mz_swM_cid[x], 
-                                                                  mz=mz_swM_cid[[x]], intensity=int_swM_cid[[x]]))
-## sweet maize HCD
-rt_swM_hcd <- unlist(lapply(strsplit(names(assembly_swM_hcd), split="_"), "[", 4))
-rt_swM_hcd <- as.numeric(rt_swM_hcd)
-prec_mz_swM_hcd <- unlist(lapply(strsplit(names(assembly_swM_hcd), split="_"), "[", 5))
-prec_mz_swM_hcd <- as.numeric(prec_mz_swM_hcd)
-mz_swM_hcd <- lapply(assembly_swM_hcd, function(x) x[,1])
-int_swM_hcd <- lapply(assembly_swM_hcd, function(x) x[,2])
-## create Spectrum2 objects with the corresponding information
-spN_swM_hcd_l <- lapply(1:length(assembly_swM_hcd), function(x) new("Spectrum2", 
-                                                                  rt=rt_swM_hcd[x], precursorMz=prec_mz_swM_hcd[x], 
-                                                                  mz=mz_swM_hcd[[x]], intensity=int_swM_hcd[[x]]))
+## neg
+## kernel 
+spN_MK_cid_l_neg <- construct_Spectrum2(assembly_MK_cid_neg)
+spN_MK_hcd_l_neg <- construct_Spectrum2(assembly_MK_hcd_neg)
 
+## leaf 
+spN_ML_cid_l_neg <- construct_Spectrum2(assembly_ML_cid)
+spN_ML_hcd_l_neg <- construct_Spectrum2(assembly_ML_hcd)
+
+## sweet maize
+spN_swM_cid_l_neg <- construct_Spectrum2(assembly_swM_cid)
+spN_swM_hcd_l_neg <- construct_Spectrum2(assembly_swM_hcd)
+
+## pos
+## kernel 
+spN_MK_cid_l_pos <- construct_Spectrum2(assembly_MK_cid_pos)
+spN_MK_hcd_l_pos <- construct_Spectrum2(assembly_MK_hcd_pos)
+
+## leaf 
+spN_ML_cid_l_pos <- construct_Spectrum2(assembly_ML_cid_pos)
+spN_ML_hcd_l_pos <- construct_Spectrum2(assembly_ML_hcd_pos)
+
+## sweet maize
+spN_swM_cid_l_pos <- construct_Spectrum2(assembly_swM_cid_pos)
+spN_swM_hcd_l_pos <- construct_Spectrum2(assembly_swM_hcd_pos)
 
 ## 7)
 ## create Spectra object from the list of Spectrum2 objects
-spectra_li_MK_cid <- MSnbase::Spectra(spN_MK_cid_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_MK_cid_l)))) 
-spectra_li_MK_hcd <- MSnbase::Spectra(spN_MK_hcd_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_MK_hcd_l)))) 
-spectra_li_ML_cid <- MSnbase::Spectra(spN_ML_cid_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_ML_cid_l)))) 
-spectra_li_ML_hcd <- MSnbase::Spectra(spN_ML_hcd_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_ML_hcd_l)))) 
-spectra_li_swM_cid <- MSnbase::Spectra(spN_swM_cid_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_swM_cid_l)))) 
-spectra_li_swM_hcd <- MSnbase::Spectra(spN_swM_hcd_l, elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_swM_hcd_l)))) 
+
+#' @name create_Spectra
+#' @description The function `create_Spectra` creates from a list of `Spectrum2`
+#' objects a `Spectra` object. 
+#' @param spN_l `list` of `Spectrum2` objects
+#' @details 
+#' @usage create_Spectra(spN_l)
+#' @author Thomas Naake \email{thomasnaake@@googlemail.com}
+#' @return `Spectra` object
+#' @examples
+create_Spectra <- function(spN_l) {
+    MSnbase::Spectra(spN_l, 
+        elementMetadata=S4Vectors::DataFrame(show=rep(TRUE, length(spN_l)))) 
+}
+
+## neg 
+specta_li_MK_cid_neg <- create_Spectra(spN_MK_cid_l_neg)
+specta_li_MK_hcd_neg <- create_Spectra(spN_MK_hcd_l_neg)
+specta_li_ML_cid_neg <- create_Spectra(spN_ML_cid_l_neg)
+specta_li_ML_hcd_neg <- create_Spectra(spN_ML_hcd_l_neg)
+specta_li_swM_cid_neg <- create_Spectra(spN_swM_cid_l_neg)
+specta_li_swM_hcd_neg <- create_Spectra(spN_swM_hcd_l_neg)
+
+## pos
+specta_li_MK_cid_pos <- create_Spectra(spN_MK_cid_l_pos)
+specta_li_MK_hcd_pos <- create_Spectra(spN_MK_hcd_l_pos)
+specta_li_ML_cid_pos <- create_Spectra(spN_ML_cid_l_pos)
+specta_li_ML_hcd_pos <- create_Spectra(spN_ML_hcd_l_pos)
+specta_li_swM_cid_pos <- create_Spectra(spN_swM_cid_l_pos)
+specta_li_swM_hcd_pos <- create_Spectra(spN_swM_hcd_l_pos)
+
 
 ## 8) 
 ## calculate pair-wise similarities using the normalizeddotproduct
-similarityMat_MK_cid <- compare_Spectra(spectra_li_MK_cid, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_MK_hcd <- compare_Spectra(spectra_li_MK_hcd, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_cid <- compare_Spectra(spectra_li_ML_cid, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_hcd <- compare_Spectra(spectra_li_ML_hcd, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_cid <- compare_Spectra(spectra_li_swM_cid, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_hcd <- compare_Spectra(spectra_li_swM_hcd, fun=normalizeddotproduct, binSize=0.01)
+
+## neg
+similarityMat_MK_cid_neg <- compare_Spectra(spectra_li_MK_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_MK_hcd_neg <- compare_Spectra(spectra_li_MK_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_ML_cid_neg <- compare_Spectra(spectra_li_ML_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_ML_hcd_neg <- compare_Spectra(spectra_li_ML_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_swM_cid_neg <- compare_Spectra(spectra_li_swM_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_swM_hcd_neg <- compare_Spectra(spectra_li_swM_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+
+## pos 
+similarityMat_MK_cid_pos <- compare_Spectra(spectra_li_MK_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_MK_hcd_pos <- compare_Spectra(spectra_li_MK_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_ML_cid_pos <- compare_Spectra(spectra_li_ML_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_ML_hcd_pos <- compare_Spectra(spectra_li_ML_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_swM_cid_pos <- compare_Spectra(spectra_li_swM_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_swM_hcd_pos <- compare_Spectra(spectra_li_swM_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
 
 ## 9) 
 ## visualize network 
 library(igraph)
-colnames(similarityMat_MK_cid) <- rownames(similarityMat_MK_cid) <- names(assembly_MK_cid)
-colnames(similarityMat_MK_hcd) <- rownames(similarityMat_MK_hcd) <- names(assembly_MK_hcd)
-colnames(similarityMat_ML_cid) <- rownames(similarityMat_ML_cid) <- names(assembly_ML_cid)
-colnames(similarityMat_ML_hcd) <- rownames(similarityMat_ML_hcd) <- names(assembly_ML_hcd)
-colnames(similarityMat_swM_cid) <- rownames(similarityMat_swM_cid) <- names(assembly_swM_cid)
-colnames(similarityMat_swM_hcd) <- rownames(similarityMat_swM_hcd) <- names(assembly_swM_hcd)
-colnames(similarityMat) <- rownames(similarityMat) <- names(assembly_MK_hcd)
-similarityMat_cut <- similarityMat
-similarityMat_cut[similarityMat_cut < 0.05] <- 0
-net <- graph_from_adjacency_matrix(similarityMat_cut, weighted = TRUE, mode = "undirected", diag=F)
-plot(net, vertex.label=NA, vertex.size=0.01)
+
+#' @name get_network_plot
+#' @description 
+#' @param similarityMat `matrix`, square matrix with similarity values
+#' @param assembly 
+#' @param threshold `numeric`,  set edges below `threshold` to 0
+#' @param file `character
+#' @details Set `threshold` to `<= 0` if no thresholding should happen
+#' @usage get_network_plot(similarityMat, assembly, threshold = 0.05, file)
+#' @author Thomas Naake \email{thomasnaake@@googlemail.com}
+#' @return `igraph` object, will save the network plot to `file`
+#' @examples 
+#' get_network_plot(similarityMat, assembly, threshold = 0.05, file)
+get_network_plot <- function(similarityMat, assembly, threshold = 0.05, file) {
+    colnames(similarityMat) <- rownames(similarityMat) <- names(assembly)
+    similarityMat[similarityMat < threshold] <- 0
+    net <- graph_from_adjacency_matrix(similarityMat, weighted = TRUE,
+                                                mode = "undirected", diag = F)
+    ## plot the network, save to file
+    pdf(file)
+    plot(net, vertex.label = NA, vertex.size = 0.01)
+    dev.off()
+    return(net)
+}
+
+## neg
+get_network_plot(similarityMat_MK_cid_neg, assembly_MK_cid_neg, file = "network_assembly_MK_cid_neg.pdf")
+get_network_plot(similarityMat_MK_hcd_neg, assembly_MK_hcd_neg, file = "network_assembly_MK_hcd_neg.pdf")
+get_network_plot(similarityMat_ML_cid_neg, assembly_ML_cid_neg, file = "network_assembly_ML_cid_neg.pdf")
+get_network_plot(similarityMat_ML_hcd_neg, assembly_ML_hcd_neg, file = "network_assembly_ML_hcd_neg.pdf")
+get_network_plot(similarityMat_swM_cid_neg, assembly_swM_cid_neg, file = "network_assembly_swM_cid_neg.pdf")
+get_network_plot(similarityMat_swM_hcd_neg, assembly_swM_hcd_neg, file = "network_assembly_swM_hcd_neg.pdf")
+
+## pos
+get_network_plot(similarityMat_MK_cid_pos, assembly_MK_cid_pos, file = "network_assembly_MK_cid_pos.pdf")
+get_network_plot(similarityMat_MK_hcd_pos, assembly_MK_hcd_pos, file = "network_assembly_MK_hcd_pos.pdf")
+get_network_plot(similarityMat_ML_cid_pos, assembly_ML_cid_pos, file = "network_assembly_ML_cid_pos.pdf")
+get_network_plot(similarityMat_ML_hcd_pos, assembly_ML_hcd_pos, file = "network_assembly_ML_hcd_pos.pdf")
+get_network_plot(similarityMat_swM_cid_pos, assembly_swM_cid_pos, file = "network_assembly_swM_cid_pos.pdf")
+get_network_plot(similarityMat_swM_hcd_pos, assembly_swM_hcd_pos, file = "network_assembly_swM_hcd_pos.pdf")
+
