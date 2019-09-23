@@ -54,7 +54,7 @@ save("an_pos", "anF_pos", "anI_pos", "anIC_pos", "anFA_pos", "pl_pos", file = ".
 ## remove features from 1.2 min to 13.0 min 
 ##
 cut_rt <- function(peaklist, lower=72, upper=780) {
-    peaklist[peaklist[, "rt"] >= lower & peaklistl[, "rt"] <= upper,]
+    peaklist[peaklist[, "rt"] >= lower & peaklist[, "rt"] <= upper,]
 } 
 pl_neg <- cut_rt(pl_neg)
 pl_pos <- cut_rt(pl_pos)
@@ -76,10 +76,11 @@ pca_plot <- function(peaklist, batch, file, text=FALSE) {
     p <- prcomp(t(peaklist))   
     pdf(file)
     plot(p$x[,1], p$x[,2], col=as.numeric(as.factor(batch))+1)
-    if (text) text(pl_pca$x[,1], pl_pca$x[,2], labels = colnames(pl_smp), cex = 0.3)
+    if (text) text(p$x[,1], p$x[,2], labels = colnames(peaklist), cex = 0.3)
     dev.off()
 }
 
+setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/results_ms1")
 pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_raw.pdf")
 pca_plot(pl_smp_pos, batch_pos, "pca_peaklist_pos_sample_raw.pdf")
 
