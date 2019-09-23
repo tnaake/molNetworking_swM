@@ -100,7 +100,7 @@ pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_sample_log_withoutOutlier.pdf")
 ################################################################################
 ## MS-Dial (LOWESS normalization tool): lowess normalization 
 ## order according to sample order list
-order_inj <- read.table("Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
+order_inj <- read.table("../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
 ## remove blanks
 order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
 ## change all special characters to "."
@@ -128,15 +128,34 @@ remove_samples_vector <- function(x, samples, names=TRUE) {
 colnames(pl_smp_neg)[! colnames(pl_smp_neg) %in% order_inj ]
 colnames(pl_smp_pos)[! colnames(pl_smp_pos) %in% order_inj ]
 
-## remove "C159.3" from pl, pl_smp and pl_smp_batch
+## rename "C92.3_1" to "C92.3.1", remove "C159.3" from pl_neg, pl_smp_neg 
+## and batch_neg
+colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
+colnames(pl_smp_neg)[which(colnames(pl_smp_neg) == "C92.3_1")] <- "C92.3.1"
 pl_neg <- remove_samples_mat(peaklistl=pl_neg, samples = "C159.3")
 pl_smp_neg <- remove_samples_mat(peaklistl=pl_smp_neg, samples = "C159.3")
-batch_neg <- remove_samples_vectort(x=batch_neg, samples = "C159.3")
+batch_neg <- remove_samples_vector(x=batch_neg, samples = "C159.3")
+
+## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_smp_pos,
+## and batch_pos
+tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2", 
+          "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
+          "QC120batch1.pre.6", "C169.1")
+pl_pos <- remove_samples_mat(peaklist = pl_pos, samples = tmp)
+pl_smp_pos <- remove_samples_mat(peaklist = pl_smp_pos, samples = tmp)
+batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
 order_inj[!order_inj %in% colnames(pl_smp_neg)]
 order_inj[!order_inj %in% colnames(pl_smp_pos)]
-## remove "C119.3", "QC14", "C193.3", "C90.2", "E32" from order_inj
-order_inj <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"))
+## remove "C119.3", "QC14", "C193.3", "C90.2", "E32" from order_inj and assign
+## to order_inj_neg
+## remove "qc120batch2.pre.[1-8]", "C119.3", "C261.1" and "C145.3.2" from 
+## order_inj and assign to order_inj_pos
+order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"))
+order_inj_pos <- remove_samples_vector(order_inj, c("qc120batch2.pre.1", 
+    "qc120batch2.pre.2", "qc120batch2.pre.3", "qc120batch2.pre.4", 
+    "qc120batch2.pre.5", "qc120batch2.pre.6", "qc120batch2.pre.7", 
+    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"))
 
 ## reorder pl and pl_smp according to order_inj
 pl_smp_neg <- pl_smp_neg[, order_inj]
