@@ -178,8 +178,9 @@ pl_smp_pos_t[grep(pl_smp_pos_t[, "Name"], pattern="batch"), "Type"] <- "FALSE"
 write.table(pl_smp_pos_t, file="peaklist_pos_log_withoutOutlier.txt", sep="\t", dec=".", row.names=FALSE, quote=FALSE)
 ## open in MS-DIAL and normalize
 
-pl_smp_neg_t_lowess <- read.table(file="peaklist_neg_log_withoutOutlier_20199191228.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
-pl_smp_pos_t_lowess <- read.table(file="peaklist_pos_log_withoutOutlier_20199191228.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
+## !! adjust file names of returned files !!
+pl_smp_neg_t_lowess <- read.table(file="peaklist_neg_log_withoutOutlier_20199231017.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
+pl_smp_pos_t_lowess <- read.table(file="peaklist_pos_log_withoutOutlier_20199231028.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
 ##pl_smp_lowess <- t(pl_smp_t_lowess)
 pl_smp_neg_lowess <- remove_samples_matrix(pl_smp_neg_lowess, c("TYPE", "ORDER"))
 pl_smp_pos_lowess <- remove_samples_matrix(pl_smp_pos_lowess, c("TYPE", "ORDER"))
