@@ -132,9 +132,10 @@ colnames(pl_smp_pos)[! colnames(pl_smp_pos) %in% order_inj ]
 ## and batch_neg
 colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
 colnames(pl_smp_neg)[which(colnames(pl_smp_neg) == "C92.3_1")] <- "C92.3.1"
-pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = "C159.3")
-pl_smp_neg <- remove_samples_matrix(peaklist = pl_smp_neg, samples = "C159.3")
-batch_neg <- remove_samples_vector(x=batch_neg, samples = "C159.3")
+tmp <- "C159.3"
+pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = tmp)
+pl_smp_neg <- remove_samples_matrix(peaklist = as.matrix(pl_smp_neg), samples = tmp)
+batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
 
 ## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_smp_pos,
 ## and batch_pos
@@ -142,7 +143,7 @@ tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2",
           "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
           "QC120batch1.pre.6", "C169.1")
 pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
-pl_smp_pos <- remove_samples_mateix(peaklist = pl_smp_pos, samples = tmp)
+pl_smp_pos <- remove_samples_mateix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
 batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
 order_inj[!order_inj %in% colnames(pl_smp_neg)]
