@@ -105,6 +105,7 @@ order_inj <- read.table("../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequenc
 order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
 ## change all special characters to "."
 order_inj <- gsub(pattern = "-", x = order_inj, replacement = ".")
+order_inj <- gsub(pattern = "_", x = order_inj, replacement = ".")
 order_inj <- gsub(pattern = "[(]", x = order_inj, replacement = ".")
 order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
 
@@ -117,9 +118,9 @@ remove_samples_matrix <- function(peaklist, samples) {
 remove_samples_vector <- function(x, samples, names=TRUE) {
     if (names) {
         if(is.null(names(x))) stop("x does not contain names")
-        x[!names(x) %in% samples]    
+        x <- x[!names(x) %in% samples]    
     } else {
-        x[!x %in% samples]
+        x <- x[!x %in% samples]
     }
     x
 }
@@ -143,7 +144,7 @@ tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2",
           "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
           "QC120batch1.pre.6", "C169.1")
 pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
-pl_smp_pos <- remove_samples_mateix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
+pl_smp_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
 batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
 order_inj[!order_inj %in% colnames(pl_smp_neg)]
@@ -152,15 +153,16 @@ order_inj[!order_inj %in% colnames(pl_smp_pos)]
 ## to order_inj_neg
 ## remove "qc120batch2.pre.[1-8]", "C119.3", "C261.1" and "C145.3.2" from 
 ## order_inj and assign to order_inj_pos
-order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"))
+names(order_inj) <- order_inj
+order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"), names = FALSE)
 order_inj_pos <- remove_samples_vector(order_inj, c("qc120batch2.pre.1", 
     "qc120batch2.pre.2", "qc120batch2.pre.3", "qc120batch2.pre.4", 
     "qc120batch2.pre.5", "qc120batch2.pre.6", "qc120batch2.pre.7", 
-    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"))
+    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"), names = FALSE)
 
 ## reorder pl and pl_smp according to order_inj
-pl_smp_neg <- pl_smp_neg[, order_inj]
-pl_smp_pos <- pl_smp_pos[, order_inj]
+pl_smp_neg <- pl_smp_neg[, order_inj_neg]
+pl_smp_pos <- pl_smp_pos[, order_inj_pos]
 
 ## convert to a file format that is readable by 
 ## Name Type Order Feat1 Feat2 Feat3 ...
