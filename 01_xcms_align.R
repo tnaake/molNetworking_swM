@@ -27,11 +27,11 @@ setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/swMaize_K_pos_
 
 ## load xcms
 library(xcms)
-xset_pos <- xcmsSet(file = "./", method="centWave", ppm=20, 
-                snthresh=10, peakwidth=c(5,20), prefilter = c(3, 5000))
-xset2_pos <- group(xset_pos, method="density", minfrac=0.5, minsamp=1, bw=5, mzwid=0.025)
-xset3_pos <- retcor(xset2_pos, family= "s", plottype= "m", missing=1, extra=1, span=1)
-xset4_pos <- group(xset3_pos, method="density", mzwid=0.025, minfrac=0.5, minsamp=1, bw=5)
+xset_pos <- xcmsSet(file = "./", method="centWave", ppm = 20, 
+                snthresh = 10, peakwidth = c(5, 35), prefilter = c(3, 5000))
+xset2_pos <- group(xset_pos, method = "density", minfrac = 0.5, minsamp = 1, bw = 5, mzwid = 0.025)
+xset3_pos <- retcor(xset2_pos, family = "s", plottype = "m", missing = 1, extra = 1, span = 1)
+xset4_pos <- group(xset3_pos, method = "density", mzwid = 0.025, minfrac = 0.5, minsamp = 1, bw = 5)
 xset5_pos <- fillPeaks(xset4_pos, method = "chrom")
 save("xset_pos", "xset2_pos", "xset3_pos", 
      "xset4_pos", "xset5_pos", file = "./sweetMaize_pos_xcms.RData")
@@ -95,7 +95,7 @@ pca_plot(pl_smp_pos, batch_pos, "pca_peaklist_pos_sample_log.pdf", text=TRUE)
 ## remove QC14, E32, C90.2 from negative since they are outliers
 pl_smp_neg <- pl_smp_neg[, !colnames(pl_smp_neg) %in% c("QC14", "E32", "C90.2")]
 batch_neg <- batch_neg[!names(batch_neg) %in% c("QC14", "E32", "C90.2")]
-pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_sample_log_withoutOutlier.pdf")
+pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_log_withoutOutlier.pdf")
 
 ################################################################################
 ## MS-Dial (LOWESS normalization tool): lowess normalization 
@@ -182,8 +182,9 @@ write.table(pl_smp_pos_t, file="peaklist_pos_log_withoutOutlier.txt", sep="\t", 
 pl_smp_neg_t_lowess <- read.table(file="peaklist_neg_log_withoutOutlier_20199231017.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
 pl_smp_pos_t_lowess <- read.table(file="peaklist_pos_log_withoutOutlier_20199231028.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
 ##pl_smp_lowess <- t(pl_smp_t_lowess)
-pl_smp_neg_lowess <- remove_samples_matrix(pl_smp_neg_lowess, c("TYPE", "ORDER"))
-pl_smp_pos_lowess <- remove_samples_matrix(pl_smp_pos_lowess, c("TYPE", "ORDER"))
+tmp <- c("TYPE", "ORDER")
+pl_smp_neg_lowess <- remove_samples_matrix(as.matrix(pl_smp_neg_t_lowess), tmp)
+pl_smp_pos_lowess <- remove_samples_matrix(as.matrix(pl_smp_pos_t_lowess), tmp)
 
 pl_smp_neg_lowess <- t(pl_smp_neg_lowess)
 pl_smp_pos_lowess <- t(pl_smp_pos_lowess)
@@ -250,8 +251,8 @@ pca_plot(pl_smp_pos_batch_tic, batch_pos, "pca_peaklist_pos_sample_log_batch_tic
 
 mzRT <- pl_neg[, c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "npeaks", "isotopes", "adduct", "pcgroup")]
 pl_final <- cbind(mzRT, pl_smp_neg_batch_tic)
-write.table(pl_final, file = "peaklist_neg_log_batch_tic_final.txt", sep="\t", dec=".", quote=FALSE) 
+write.table(pl_final, file = "peaklist_neg_log_batch_tic_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
 
 mzRT <- pl_pos[, c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "npeaks", "isotopes", "adduct", "pcgroup")]
 pl_final <- cbind(mzRT, pl_smp_pos_batch_tic)
-write.table(pl_final, file = "peaklist_pos_log_batch_tic_final.txt", sep="\t", dec=".", quote=FALSE) 
+write.table(pl_final, file = "peaklist_pos_log_batch_tic_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
