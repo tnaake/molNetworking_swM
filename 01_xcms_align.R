@@ -78,7 +78,17 @@ save("an_NF_pos", "anF_NF_pos", "anI_NF_pos", "anIC_NF_pos", "anFA_NF_pos", "pl_
 ################################################################################
 ############################### injection order ################################
 ################################################################################
+##
+## remove features from 1.2 min to 13.0 min 
+##
+cut_rt <- function(peaklist, lower=72, upper=780) {
+    peaklist[peaklist[, "rt"] >= lower & peaklist[, "rt"] <= upper,]
+} 
+## pl_pos_bc <- cut_rt(pl_pos_pos_bc)
 
+pl_neg <- cut_rt(pl_neg)
+pl_pos <- cut_rt(pl_pos)
+pl_NF_pos <- cut_rt(pl_NF_pos)
 
 
 ## remove qc120batch2.pre 
@@ -99,7 +109,7 @@ order_inj <- gsub(pattern = "[(]", x = order_inj, replacement = ".")
 order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
 
 ## functions to remove columns from matrix or elements from vector
-remove_samples_matrix <- function(peaklist, samples) {
+remove_samples_df <- function(peaklist, samples) {
     if (!is.matrix(peaklist)) stop("peaklist is not a matrix")
     peaklist[, -which(colnames(peaklist) %in% samples)]
 }
@@ -135,17 +145,17 @@ colnames(pl_NF_pos)[! colnames(pl_NF_pos) %in% order_inj ]
 colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
 colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
 tmp <- "C159.3"
-pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = tmp)
-pl_smp_neg <- remove_samples_matrix(peaklist = as.matrix(pl_smp_neg), samples = tmp)
+pl_neg <- remove_samples_df(peaklist = pl_neg, samples = tmp)
+pl_smp_neg <- remove_samples_df(peaklist = pl_smp_neg, samples = tmp)
 batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
 
 ## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_NF_pos,
 ## and batch_pos
 tmp <-  c("C159.3", "C169.1")
-pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
-pl_smp_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
-pl_NF_pos <- remove_samples_matrix(peaklist = as.matrix(pl_NF_pos), samples = tmp)
-pl_smp_NF_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_NF_pos), samples = tmp)
+pl_pos <- remove_samples_df(peaklist = pl_pos, samples = tmp)
+pl_smp_pos <- remove_samples_df(peaklist = pl_smp_pos, samples = tmp)
+pl_NF_pos <- remove_samples_df(peaklist = pl_NF_pos, samples = tmp)
+pl_smp_NF_pos <- remove_samples_df(peaklist = pl_smp_NF_pos, samples = tmp)
 batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
 order_inj[!order_inj %in% colnames(pl_neg)]
@@ -171,15 +181,15 @@ library(devtools)
 install_git("https://gitlab.com/CarlBrunius/batchCorr.git")
 library(batchCorr)
 ## create matrix with information on mz and rt
-peakIn <- pl_pos[, "mz", "rt"]
+peakIn <- pl_pos[, c("mz", "rt")]
+mode(peakIn) <- "numeric"
 ##pl_pos_s <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
 ##pl_NF_pos_s <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
 
 ##create meta data.frame
 grp <- ifelse(grepl(colnames(pl_smp_pos), pattern = "[q|Q][c|C]"), "QC", "Ref")
-#inj <- 
-match(colnames(pl_smp_pos), order_inj)
-meta <- data.frame(batch=sampclasses(xset), grp, inj)
+inj <- match(colnames(pl_smp_pos), order_inj)
+meta <- data.frame(batch=batch_pos, grp=grp, inj=inj)
 
 alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = PTnofill, PeakTabFilled = PTfill, batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC")
 alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_smp_NF_pos), 
@@ -187,21 +197,14 @@ alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_smp_NF_pos),
         sampleGroups = meta$grp, selectGroup = "QC", rtdiff = 30)
 pl_pos_bc <- alignBat$PTalign
 
-pl_pos_bc <- cut_rt(pl_pos_corr)
-pca_plot(pl_pos_bc, file = "pca_peaklist_pos_batchCorr.pdf")
+
+pca_plot(pl_pos_bc, batch_pos, file = "pca_peaklist_pos_batchCorr.pdf")
 
 ################################################################################
 ################################ normalization #################################
 ################################################################################
 
-##
-## remove features from 1.2 min to 13.0 min 
-##
-cut_rt <- function(peaklist, lower=72, upper=780) {
-    peaklist[peaklist[, "rt"] >= lower & peaklist[, "rt"] <= upper,]
-} 
-pl_neg <- cut_rt(pl_neg)
-pl_pos <- cut_rt(pl_pos)
+
 
 ##
 ## normalization
@@ -261,8 +264,8 @@ pl_smp_neg_t_lowess <- read.table(file="peaklist_neg_log_withoutOutlier_20199231
 pl_smp_pos_t_lowess <- read.table(file="peaklist_pos_log_withoutOutlier_20199231028.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
 ##pl_smp_lowess <- t(pl_smp_t_lowess)
 tmp <- c("TYPE", "ORDER")
-pl_smp_neg_lowess <- remove_samples_matrix(as.matrix(pl_smp_neg_t_lowess), tmp)
-pl_smp_pos_lowess <- remove_samples_matrix(as.matrix(pl_smp_pos_t_lowess), tmp)
+pl_smp_neg_lowess <- remove_samples_df(pl_smp_neg_t_lowess, tmp)
+pl_smp_pos_lowess <- remove_samples_df(pl_smp_pos_t_lowess, tmp)
 
 pl_smp_neg_lowess <- t(pl_smp_neg_lowess)
 pl_smp_pos_lowess <- t(pl_smp_pos_lowess)
