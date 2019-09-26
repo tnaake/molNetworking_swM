@@ -79,6 +79,8 @@ save("an_NF_pos", "anF_NF_pos", "anI_NF_pos", "anIC_NF_pos", "anFA_NF_pos", "pl_
 ############################### injection order ################################
 ################################################################################
 
+
+
 ## remove qc120batch2.pre 
 tmp <- c("qc120batch2.pre.1", "qc120batch2.pre.2", "qc120batch2.pre.3", 
     "qc120batch2.pre.4", "qc120batch2.pre.5", "qc120batch2.pre.6", 
@@ -87,7 +89,7 @@ pl_pos <- pl_pos[, !colnames(pl_pos) %in% tmp]
 pl_NF_pos <- pl_NF_pos[, !colnames(pl_NF_pos) %in% tmp]
 
 ## order according to sample order list
-order_inj <- read.table("../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
+order_inj <- read.table("../../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
 ## remove blanks
 order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
 ## change all special characters to "."
@@ -112,6 +114,17 @@ remove_samples_vector <- function(x, samples, names=TRUE) {
     x
 }
 
+
+## get batch
+batch_neg <- as.character(sampclass(xset_neg))
+batch_pos <- as.character(sampclass(xset_pos))
+pl_smp_neg <- pl_neg[, which(colnames(pl_neg) == "C1.2"):which(colnames(pl_neg) == "Y79")]
+pl_smp_pos <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
+pl_smp_NF_pos <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
+names(batch_neg) <- colnames(pl_smp_neg)
+names(batch_pos) <- colnames(pl_smp_pos)
+
+
 ## check colnames: do they occur in order_inj --> remove if otherwise
 colnames(pl_neg)[! colnames(pl_neg) %in% order_inj ]
 colnames(pl_pos)[! colnames(pl_pos) %in% order_inj ]
@@ -123,15 +136,16 @@ colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
 colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
 tmp <- "C159.3"
 pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = tmp)
+pl_smp_neg <- remove_samples_matrix(peaklist = as.matrix(pl_smp_neg), samples = tmp)
 batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
 
 ## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_NF_pos,
 ## and batch_pos
-tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2", 
-          "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
-          "QC120batch1.pre.6", "C169.1")
+tmp <-  c("C159.3", "C169.1")
 pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
+pl_smp_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
 pl_NF_pos <- remove_samples_matrix(peaklist = as.matrix(pl_NF_pos), samples = tmp)
+pl_smp_NF_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_NF_pos), samples = tmp)
 batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
 order_inj[!order_inj %in% colnames(pl_neg)]
@@ -158,17 +172,19 @@ install_git("https://gitlab.com/CarlBrunius/batchCorr.git")
 library(batchCorr)
 ## create matrix with information on mz and rt
 peakIn <- pl_pos[, "mz", "rt"]
-pl_pos_s <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
-pl_NF_pos_s <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
+##pl_pos_s <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
+##pl_NF_pos_s <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
 
 ##create meta data.frame
-grp <- ifelse(grepl(colnames(pl_pos_s), pattern = "[q|Q][c|C]"), "QC", "Ref")
+grp <- ifelse(grepl(colnames(pl_smp_pos), pattern = "[q|Q][c|C]"), "QC", "Ref")
 #inj <- 
-match(colnames(pl_pos_s), order_inj)
+match(colnames(pl_smp_pos), order_inj)
 meta <- data.frame(batch=sampclasses(xset), grp, inj)
 
 alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = PTnofill, PeakTabFilled = PTfill, batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC")
-alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_NF_pos_s), PeakTabFilled = t(pl_pos_s), batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC", rtdiff = 30)
+alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_smp_NF_pos), 
+        PeakTabFilled = t(pl_smp_pos), batches = meta$batch, 
+        sampleGroups = meta$grp, selectGroup = "QC", rtdiff = 30)
 pl_pos_bc <- alignBat$PTalign
 
 pl_pos_bc <- cut_rt(pl_pos_corr)
@@ -191,13 +207,7 @@ pl_pos <- cut_rt(pl_pos)
 ## normalization
 ##
 
-## get batch
-batch_neg <- as.character(sampclass(xset_neg))
-batch_pos <- as.character(sampclass(xset_pos))
-pl_smp_neg <- pl_neg[, which(colnames(pl_neg) == "C1.2"):which(colnames(pl_neg) == "Y79")]
-pl_smp_pos <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
-names(batch_neg) <- colnames(pl_smp_neg)
-names(batch_pos) <- colnames(pl_smp_pos)
+
 
 ## define function pca_plot to create a PCA plot
 pca_plot <- function(peaklist, batch, file, text=FALSE) {
