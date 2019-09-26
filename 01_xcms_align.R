@@ -110,8 +110,8 @@ order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
 
 ## functions to remove columns from matrix or elements from vector
 remove_samples_df <- function(peaklist, samples) {
-    if (!is.matrix(peaklist)) stop("peaklist is not a matrix")
-    peaklist[, -which(colnames(peaklist) %in% samples)]
+    if (!is.data.frame(peaklist)) stop("peaklist is not a data.frame")
+    peaklist[, !colnames(peaklist) %in% samples]
 }
 
 remove_samples_vector <- function(x, samples, names=TRUE) {
