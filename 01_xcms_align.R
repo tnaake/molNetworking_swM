@@ -28,13 +28,34 @@ setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/swMaize_K_pos_
 ## load xcms
 library(xcms)
 xset_pos <- xcmsSet(file = "./", method="centWave", ppm = 20, 
-                snthresh = 10, peakwidth = c(5, 35), prefilter = c(3, 5000))
+                snthresh = 10, peakwidth = c(5, 20), prefilter = c(3, 5000))
 xset2_pos <- group(xset_pos, method = "density", minfrac = 0.5, minsamp = 1, bw = 5, mzwid = 0.025)
 xset3_pos <- retcor(xset2_pos, family = "s", plottype = "m", missing = 1, extra = 1, span = 1)
 xset4_pos <- group(xset3_pos, method = "density", mzwid = 0.025, minfrac = 0.5, minsamp = 1, bw = 5)
 xset5_pos <- fillPeaks(xset4_pos, method = "chrom")
 save("xset_pos", "xset2_pos", "xset3_pos", 
      "xset4_pos", "xset5_pos", file = "./sweetMaize_pos_xcms.RData")
+
+
+
+data("OneBatchData")
+B_PT ## peak table (no missing data, i.e. after fillPeaks and imputation)
+B_meta ## contains information on batch (all samples from batch B), sample group (QC or Ref) and inj (number in inj seq)
+batchBCorr <- correctDrift(peakTable = B_PT, injections = B_meta$inj, 
+    sampleGroups = B_meta$grp, QCID = 'QC', modelNames = 'VVE', G = 17:22)
+
+data("ThreeBatchData")
+
+PTnofill ## peak table with missing data (no fillPeaks)
+PTfill ## filled peak table with no missing data
+meta ## information on batch
+peakIn <- peakInfo(PT = PTnofill, sep = "@", start = 3)
+peakIn <- peakInfo(PT = PTfill, sep = "@", start = 3)
+## perform multi-batch alignment
+
+
+
+
 
 ## CAMERA
 library(CAMERA)
@@ -44,7 +65,114 @@ anI_pos <- findIsotopes(anF_pos, mzabs=0.01)
 anIC_pos <- groupCorr(anI_pos, cor_eic_th=0.75, graphMethod = "lpc")
 anFA_pos <- findAdducts(anIC_pos, polarity="positive")
 pl_pos <- getPeaklist(anFA_pos)
+## with no fill
+an_NF_pos <- xsAnnotate(xset4_pos)
+anF_NF_pos <- groupFWHM(an_NF_pos, perfwhm = 0.6)
+anI_NF_pos <- findIsotopes(anF_NF_pos, mzabs=0.01)
+anIC_NF_pos <- groupCorr(anI_NF_pos, cor_eic_th=0.75, graphMethod = "lpc")
+anFA_NF_pos <- findAdducts(anIC_NF_pos, polarity="positive")
+pl_NF_pos <- getPeaklist(anFA_NF_pos)
 save("an_pos", "anF_pos", "anI_pos", "anIC_pos", "anFA_pos", "pl_pos", file = "./sweetMaize_pos_CAMERA.RData")
+save("an_NF_pos", "anF_NF_pos", "anI_NF_pos", "anIC_NF_pos", "anFA_NF_pos", "pl_NF_pos", file = "./sweetMaize_pos_CAMERA_noFill.RData")
+
+################################################################################
+############################### injection order ################################
+################################################################################
+
+## remove qc120batch2.pre 
+tmp <- c("qc120batch2.pre.1", "qc120batch2.pre.2", "qc120batch2.pre.3", 
+    "qc120batch2.pre.4", "qc120batch2.pre.5", "qc120batch2.pre.6", 
+    "qc120batch2.pre.7", "qc120batch2.pre.8")
+pl_pos <- pl_pos[, !colnames(pl_pos) %in% tmp]
+pl_NF_pos <- pl_NF_pos[, !colnames(pl_NF_pos) %in% tmp]
+
+## order according to sample order list
+order_inj <- read.table("../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
+## remove blanks
+order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
+## change all special characters to "."
+order_inj <- gsub(pattern = "-", x = order_inj, replacement = ".")
+order_inj <- gsub(pattern = "_", x = order_inj, replacement = ".")
+order_inj <- gsub(pattern = "[(]", x = order_inj, replacement = ".")
+order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
+
+## functions to remove columns from matrix or elements from vector
+remove_samples_matrix <- function(peaklist, samples) {
+    if (!is.matrix(peaklist)) stop("peaklist is not a matrix")
+    peaklist[, -which(colnames(peaklist) %in% samples)]
+}
+
+remove_samples_vector <- function(x, samples, names=TRUE) {
+    if (names) {
+        if(is.null(names(x))) stop("x does not contain names")
+        x <- x[!names(x) %in% samples]    
+    } else {
+        x <- x[!x %in% samples]
+    }
+    x
+}
+
+## check colnames: do they occur in order_inj --> remove if otherwise
+colnames(pl_neg)[! colnames(pl_neg) %in% order_inj ]
+colnames(pl_pos)[! colnames(pl_pos) %in% order_inj ]
+colnames(pl_NF_pos)[! colnames(pl_NF_pos) %in% order_inj ]
+
+## rename "C92.3_1" to "C92.3.1", remove "C159.3" from pl_neg, pl_smp_neg 
+## and batch_neg
+colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
+colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
+tmp <- "C159.3"
+pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = tmp)
+batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
+
+## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_NF_pos,
+## and batch_pos
+tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2", 
+          "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
+          "QC120batch1.pre.6", "C169.1")
+pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
+pl_NF_pos <- remove_samples_matrix(peaklist = as.matrix(pl_NF_pos), samples = tmp)
+batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
+
+order_inj[!order_inj %in% colnames(pl_neg)]
+order_inj[!order_inj %in% colnames(pl_pos)]
+order_inj[!order_inj %in% colnames(pl_NF_pos)]
+## remove "C119.3", "QC14", "C193.3", "C90.2", "E32" from order_inj and assign
+## to order_inj_neg
+## remove "qc120batch2.pre.[1-8]", "C119.3", "C261.1" and "C145.3.2" from 
+## order_inj and assign to order_inj_pos
+names(order_inj) <- order_inj
+order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"), names = FALSE)
+order_inj_pos <- remove_samples_vector(order_inj, c("qc120batch2.pre.1", 
+    "qc120batch2.pre.2", "qc120batch2.pre.3", "qc120batch2.pre.4", 
+    "qc120batch2.pre.5", "qc120batch2.pre.6", "qc120batch2.pre.7", 
+    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"), names = FALSE)
+
+################################################################################
+################# retention time correction for positive mode ##################
+################################################################################
+
+## batchCorr
+library(devtools)
+install_git("https://gitlab.com/CarlBrunius/batchCorr.git")
+library(batchCorr)
+## create matrix with information on mz and rt
+peakIn <- pl_pos[, "mz", "rt"]
+pl_pos_s <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
+pl_NF_pos_s <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
+
+##create meta data.frame
+grp <- ifelse(grepl(colnames(pl_pos_s), pattern = "[q|Q][c|C]"), "QC", "Ref")
+#inj <- 
+match(colnames(pl_pos_s), order_inj)
+meta <- data.frame(batch=sampclasses(xset), grp, inj)
+
+alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = PTnofill, PeakTabFilled = PTfill, batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC")
+alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_NF_pos_s), PeakTabFilled = t(pl_pos_s), batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC", rtdiff = 30)
+pl_pos_bc <- alignBat$PTalign
+
+pl_pos_bc <- cut_rt(pl_pos_corr)
+pca_plot(pl_pos_bc, file = "pca_peaklist_pos_batchCorr.pdf")
 
 ################################################################################
 ################################ normalization #################################
@@ -99,66 +227,6 @@ pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_log_withoutOutlier.pdf"
 
 ################################################################################
 ## MS-Dial (LOWESS normalization tool): lowess normalization 
-## order according to sample order list
-order_inj <- read.table("../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
-## remove blanks
-order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
-## change all special characters to "."
-order_inj <- gsub(pattern = "-", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "_", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "[(]", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
-
-## functions to remove columns from matrix or elements from vector
-remove_samples_matrix <- function(peaklist, samples) {
-    if (!is.matrix(peaklist)) stop("peaklist is not a matrix")
-    peaklist[, -which(colnames(peaklist) %in% samples)]
-}
-
-remove_samples_vector <- function(x, samples, names=TRUE) {
-    if (names) {
-        if(is.null(names(x))) stop("x does not contain names")
-        x <- x[!names(x) %in% samples]    
-    } else {
-        x <- x[!x %in% samples]
-    }
-    x
-}
-
-## check colnames: do they occur in order_inj --> remove if otherwise
-colnames(pl_smp_neg)[! colnames(pl_smp_neg) %in% order_inj ]
-colnames(pl_smp_pos)[! colnames(pl_smp_pos) %in% order_inj ]
-
-## rename "C92.3_1" to "C92.3.1", remove "C159.3" from pl_neg, pl_smp_neg 
-## and batch_neg
-colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
-colnames(pl_smp_neg)[which(colnames(pl_smp_neg) == "C92.3_1")] <- "C92.3.1"
-tmp <- "C159.3"
-pl_neg <- remove_samples_matrix(peaklist = as.matrix(pl_neg), samples = tmp)
-pl_smp_neg <- remove_samples_matrix(peaklist = as.matrix(pl_smp_neg), samples = tmp)
-batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
-
-## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_smp_pos,
-## and batch_pos
-tmp <-  c("C159.3", "QC120batch1.pre.1", "QC120batch1.pre.2", 
-          "QC120batch1.pre.3", "QC120batch1.pre.4", "QC120batch1.pre.5", 
-          "QC120batch1.pre.6", "C169.1")
-pl_pos <- remove_samples_matrix(peaklist = as.matrix(pl_pos), samples = tmp)
-pl_smp_pos <- remove_samples_matrix(peaklist = as.matrix(pl_smp_pos), samples = tmp)
-batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
-
-order_inj[!order_inj %in% colnames(pl_smp_neg)]
-order_inj[!order_inj %in% colnames(pl_smp_pos)]
-## remove "C119.3", "QC14", "C193.3", "C90.2", "E32" from order_inj and assign
-## to order_inj_neg
-## remove "qc120batch2.pre.[1-8]", "C119.3", "C261.1" and "C145.3.2" from 
-## order_inj and assign to order_inj_pos
-names(order_inj) <- order_inj
-order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"), names = FALSE)
-order_inj_pos <- remove_samples_vector(order_inj, c("qc120batch2.pre.1", 
-    "qc120batch2.pre.2", "qc120batch2.pre.3", "qc120batch2.pre.4", 
-    "qc120batch2.pre.5", "qc120batch2.pre.6", "qc120batch2.pre.7", 
-    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"), names = FALSE)
 
 ## reorder pl and pl_smp according to order_inj
 pl_smp_neg <- pl_smp_neg[, order_inj_neg]
