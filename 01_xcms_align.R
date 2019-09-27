@@ -4,7 +4,7 @@ setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/swMaize_K_neg_
 ## load xcms
 library(xcms)
 xset_neg <- xcmsSet(file = "./", method="centWave", ppm=20, 
-                snthresh=10, peakwidth=c(5,20), prefilter = c(3, 5000))
+                    snthresh=10, peakwidth=c(5,20), prefilter = c(3, 5000))
 xset2_neg <- group(xset_neg, method="density", minfrac=0.5, minsamp=1, bw=5, mzwid=0.025)
 xset3_neg <- retcor(xset2_neg, family= "s", plottype= "m", missing=1, extra=1, span=1)
 xset4_neg <- group(xset3_neg, method="density", mzwid=0.025, minfrac=0.5, minsamp=1, bw=5)
@@ -28,34 +28,14 @@ setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/swMaize_K_pos_
 ## load xcms
 library(xcms)
 xset_pos <- xcmsSet(file = "./", method="centWave", ppm = 20, 
-                snthresh = 10, peakwidth = c(5, 20), prefilter = c(3, 5000))
-xset2_pos <- group(xset_pos, method = "density", minfrac = 0.5, minsamp = 1, bw = 5, mzwid = 0.025)
+                    snthresh = 10, peakwidth = c(5, 20), prefilter = c(3, 5000))
+## take a higer bw since some shifts occur
+xset2_pos <- group(xset_pos, method = "density", minfrac = 0.5, minsamp = 1, bw = 10, mzwid = 0.025)
 xset3_pos <- retcor(xset2_pos, family = "s", plottype = "m", missing = 1, extra = 1, span = 1)
-xset4_pos <- group(xset3_pos, method = "density", mzwid = 0.025, minfrac = 0.5, minsamp = 1, bw = 5)
+xset4_pos <- group(xset3_pos, method = "density", mzwid = 0.025, minfrac = 0.5, minsamp = 1, bw = 10)
 xset5_pos <- fillPeaks(xset4_pos, method = "chrom")
 save("xset_pos", "xset2_pos", "xset3_pos", 
      "xset4_pos", "xset5_pos", file = "./sweetMaize_pos_xcms.RData")
-
-
-
-data("OneBatchData")
-B_PT ## peak table (no missing data, i.e. after fillPeaks and imputation)
-B_meta ## contains information on batch (all samples from batch B), sample group (QC or Ref) and inj (number in inj seq)
-batchBCorr <- correctDrift(peakTable = B_PT, injections = B_meta$inj, 
-    sampleGroups = B_meta$grp, QCID = 'QC', modelNames = 'VVE', G = 17:22)
-
-data("ThreeBatchData")
-
-PTnofill ## peak table with missing data (no fillPeaks)
-PTfill ## filled peak table with no missing data
-meta ## information on batch
-peakIn <- peakInfo(PT = PTnofill, sep = "@", start = 3)
-peakIn <- peakInfo(PT = PTfill, sep = "@", start = 3)
-## perform multi-batch alignment
-
-
-
-
 
 ## CAMERA
 library(CAMERA)
@@ -90,87 +70,98 @@ pl_neg <- cut_rt(pl_neg)
 pl_pos <- cut_rt(pl_pos)
 pl_NF_pos <- cut_rt(pl_NF_pos)
 
-
-## remove qc120batch2.pre 
-tmp <- c("qc120batch2.pre.1", "qc120batch2.pre.2", "qc120batch2.pre.3", 
-    "qc120batch2.pre.4", "qc120batch2.pre.5", "qc120batch2.pre.6", 
-    "qc120batch2.pre.7", "qc120batch2.pre.8")
-pl_pos <- pl_pos[, !colnames(pl_pos) %in% tmp]
-pl_NF_pos <- pl_NF_pos[, !colnames(pl_NF_pos) %in% tmp]
-
 ## order according to sample order list
-order_inj <- read.table("../../swMaize_K_neg_2019_ms1/mzML/Sweet_kernel-run_sequence-20190918.txt", stringsAsFactors = FALSE)
-## remove blanks
-order_inj <- order_inj[-grep(order_inj[,1], pattern="[B|b]lank"),]
+setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1")
+order_inj_neg <- openxlsx::read.xlsx("swMaize_K_neg_2019_ms1/injection_order_neg_byFolder.xlsx", sheet = 1)
+order_inj_pos <- openxlsx::read.xlsx("swMaize_K_pos_2019_ms1/injection_order_pos_byFolder.xlsx", sheet = 1)
+## remove blanks if any
+order_inj_neg <- order_inj_neg[!grepl(order_inj_neg[,"sample_name"], pattern="[B|b]lank"),]
 ## change all special characters to "."
-order_inj <- gsub(pattern = "-", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "_", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "[(]", x = order_inj, replacement = ".")
-order_inj <- gsub(pattern = "[)]", x = order_inj, replacement = ".")
+order_inj_neg[, "sample_name"] <- gsub(pattern = "-", x = order_inj_neg[, "sample_name"], replacement = ".")
+order_inj_neg[, "sample_name"] <- gsub(pattern = "_", x = order_inj_neg[, "sample_name"], replacement = ".")
+order_inj_neg[, "sample_name"] <- gsub(pattern = "[(]", x = order_inj_neg[, "sample_name"], replacement = ".")
+order_inj_neg[, "sample_name"] <- gsub(pattern = "[)]", x = order_inj_neg[, "sample_name"], replacement = ".")
+## remove blanks if any
+order_inj_pos <- order_inj_pos[!grepl(order_inj_pos[,"sample_name"], pattern="[B|b]lank"),]
+## change all special characters to "."
+order_inj_pos[, "sample_name"] <- gsub(pattern = "-", x = order_inj_pos[, "sample_name"], replacement = ".")
+order_inj_pos[, "sample_name"] <- gsub(pattern = "_", x = order_inj_pos[, "sample_name"], replacement = ".")
+order_inj_pos[, "sample_name"] <- gsub(pattern = "[(]", x = order_inj_pos[, "sample_name"], replacement = ".")
+order_inj_pos[, "sample_name"] <- gsub(pattern = "[)]", x = order_inj_pos[, "sample_name"], replacement = ".")
 
 ## functions to remove columns from matrix or elements from vector
 remove_samples_df <- function(peaklist, samples) {
     if (!is.data.frame(peaklist)) stop("peaklist is not a data.frame")
-    peaklist[, !colnames(peaklist) %in% samples]
+    if (length(samples) > 0) {
+        peaklist[, !colnames(peaklist) %in% samples]    
+    } else {
+        peaklist
+    }
+    
 }
 
 remove_samples_vector <- function(x, samples, names=TRUE) {
-    if (names) {
-        if(is.null(names(x))) stop("x does not contain names")
-        x <- x[!names(x) %in% samples]    
-    } else {
-        x <- x[!x %in% samples]
+    if (length(samples) > 0) {
+        if (names) {
+            if(is.null(names(x))) stop("x does not contain names")
+            x <- x[!names(x) %in% samples]    
+        } else {
+            x <- x[!x %in% samples]
+        }
     }
     x
 }
 
-
-## get batch
+## get batch and peaklist only containing samples
 batch_neg <- as.character(sampclass(xset_neg))
 batch_pos <- as.character(sampclass(xset_pos))
 pl_smp_neg <- pl_neg[, which(colnames(pl_neg) == "C1.2"):which(colnames(pl_neg) == "Y79")]
-pl_smp_pos <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
-pl_smp_NF_pos <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
+pl_smp_pos <- pl_pos[, which(colnames(pl_pos) == "C101.1"):which(colnames(pl_pos) == "Y79")]
+pl_smp_NF_pos <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C101.1"):which(colnames(pl_NF_pos) == "Y79")]
 names(batch_neg) <- colnames(pl_smp_neg)
 names(batch_pos) <- colnames(pl_smp_pos)
 
 
 ## check colnames: do they occur in order_inj --> remove if otherwise
-colnames(pl_neg)[! colnames(pl_neg) %in% order_inj ]
-colnames(pl_pos)[! colnames(pl_pos) %in% order_inj ]
-colnames(pl_NF_pos)[! colnames(pl_NF_pos) %in% order_inj ]
+colnames(pl_neg)[! colnames(pl_neg) %in% order_inj_neg[, "sample_name"] ]
+colnames(pl_pos)[! colnames(pl_pos) %in% order_inj_pos[, "sample_name"] ]
+colnames(pl_NF_pos)[! colnames(pl_NF_pos) %in% order_inj_pos[, "sample_name"] ]
 
-## rename "C92.3_1" to "C92.3.1", remove "C159.3" from pl_neg, pl_smp_neg 
+## rename "C92.3_1" to "C92.3.1", remove "QC20batch1.pre.[1-7]" and "qc120batch2.pre.[1-8]", "mixsampeNN" from pl_neg, pl_smp_neg 
 ## and batch_neg
 colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
-colnames(pl_neg)[which(colnames(pl_neg) == "C92.3_1")] <- "C92.3.1"
-tmp <- "C159.3"
+colnames(pl_smp_neg)[which(colnames(pl_smp_neg) == "C92.3_1")] <- "C92.3.1"
+names(batch_neg)[names(batch_neg) == "C92.3_1"] <- "C92.3.1"
+
+tmp <- c("QC20batch1.pre.1", "QC20batch1.pre.2", "QC20batch1.pre.3", 
+    "QC20batch1.pre.4", "QC20batch1.pre.5", "QC20batch1.pre.6", 
+    "QC20batch1.pre.7", "qc120batch2.pre.1", "qc120batch2.pre.2", 
+    "qc120batch2.pre.3", "qc120batch2.pre.4", "qc120batch2.pre.5",
+    "qc120batch2.pre.6", "qc120batch2.pre.7", "qc120batch2.pre.8",
+    "mixsample10", "mixsample20", "mixsample21", "mixsample22", "mixsample25",
+    "mixsample31", "mixsample33", "mixsample34", "mixsample35", "mixsample36", 
+    "mixsample37", "mixsample42", "mixsample43", "mixsample44", "mixsample45")   
 pl_neg <- remove_samples_df(peaklist = pl_neg, samples = tmp)
 pl_smp_neg <- remove_samples_df(peaklist = pl_smp_neg, samples = tmp)
 batch_neg <- remove_samples_vector(x=batch_neg, samples = tmp)
 
-## remove "C159.3", "QC120batch1.pre.[1-6]", "C169.1" from pl_pos, pl_NF_pos,
-## and batch_pos
-tmp <-  c("C159.3", "C169.1")
-pl_pos <- remove_samples_df(peaklist = pl_pos, samples = tmp)
-pl_smp_pos <- remove_samples_df(peaklist = pl_smp_pos, samples = tmp)
-pl_NF_pos <- remove_samples_df(peaklist = pl_NF_pos, samples = tmp)
-pl_smp_NF_pos <- remove_samples_df(peaklist = pl_smp_NF_pos, samples = tmp)
-batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
+## remove no column from pl_pos, pl_NF_pos and batch_pos
+# tmp <-  c("C159.3", "C169.1")
+# pl_pos <- remove_samples_df(peaklist = pl_pos, samples = tmp)
+# pl_smp_pos <- remove_samples_df(peaklist = pl_smp_pos, samples = tmp)
+# pl_NF_pos <- remove_samples_df(peaklist = pl_NF_pos, samples = tmp)
+# pl_smp_NF_pos <- remove_samples_df(peaklist = pl_smp_NF_pos, samples = tmp)
+# batch_pos <- remove_samples_vector(x = batch_pos, samples = tmp)
 
-order_inj[!order_inj %in% colnames(pl_neg)]
-order_inj[!order_inj %in% colnames(pl_pos)]
-order_inj[!order_inj %in% colnames(pl_NF_pos)]
-## remove "C119.3", "QC14", "C193.3", "C90.2", "E32" from order_inj and assign
-## to order_inj_neg
-## remove "qc120batch2.pre.[1-8]", "C119.3", "C261.1" and "C145.3.2" from 
-## order_inj and assign to order_inj_pos
-names(order_inj) <- order_inj
-order_inj_neg <- remove_samples_vector(order_inj, c("C119.3", "QC14", "C193.3", "C90.2", "E32"), names = FALSE)
-order_inj_pos <- remove_samples_vector(order_inj, c("qc120batch2.pre.1", 
-    "qc120batch2.pre.2", "qc120batch2.pre.3", "qc120batch2.pre.4", 
-    "qc120batch2.pre.5", "qc120batch2.pre.6", "qc120batch2.pre.7", 
-    "qc120batch2.pre.8", "C119.3", "C261.1", "C145.3.2"), names = FALSE)
+order_inj_neg[!order_inj_neg[, "sample_name"] %in% colnames(pl_neg),]
+order_inj_pos[!order_inj_pos[, "sample_name"] %in% colnames(pl_pos),]
+order_inj_pos[!order_inj_pos[, "sample_name"] %in% colnames(pl_NF_pos),]
+## remove nothing from order_inj_neg
+## remove nothing from order_inj_pos
+order_inj_neg_s <- order_inj_neg[, "sample_name"]
+names(order_inj_neg_s) <- order_inj_neg_s
+order_inj_pos_s <- order_inj_pos[, "sample_name"]
+names(order_inj_pos_s) <- order_inj_pos_s
 
 ################################################################################
 ################# retention time correction for positive mode ##################
@@ -181,35 +172,21 @@ library(devtools)
 install_git("https://gitlab.com/CarlBrunius/batchCorr.git")
 library(batchCorr)
 ## create matrix with information on mz and rt
-peakIn <- pl_pos[, c("mz", "rt")]
+peakIn <- as.matrix(pl_pos[, c("mz", "rt")])
 mode(peakIn) <- "numeric"
-##pl_pos_s <- pl_pos[, which(colnames(pl_pos) == "C1.2"):which(colnames(pl_pos) == "Y79")]
-##pl_NF_pos_s <- pl_NF_pos[, which(colnames(pl_NF_pos) == "C1.2"):which(colnames(pl_NF_pos) == "Y79")]
 
 ##create meta data.frame
-grp <- ifelse(grepl(colnames(pl_smp_pos), pattern = "[q|Q][c|C]"), "QC", "Ref")
-inj <- match(colnames(pl_smp_pos), order_inj)
+grp <- order_inj_pos[, "type"]## ifelse(grepl(colnames(pl_smp_pos), pattern = "[q|Q][c|C]"), "QC", "Ref")
+inj <- match(colnames(pl_smp_pos), order_inj_pos[, "sample_name"])
 meta <- data.frame(batch=batch_pos, grp=grp, inj=inj)
 
-alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = PTnofill, PeakTabFilled = PTfill, batches = meta$batch, sampleGroups = meta$grp, selectGroup = "QC")
+## alignBatches 
 alignBat <- alignBatches(peakInfo = peakIn, PeakTabNoFill = t(pl_smp_NF_pos), 
         PeakTabFilled = t(pl_smp_pos), batches = meta$batch, 
         sampleGroups = meta$grp, selectGroup = "QC", rtdiff = 30)
-pl_pos_bc <- alignBat$PTalign
-
-
-pca_plot(pl_pos_bc, batch_pos, file = "pca_peaklist_pos_batchCorr.pdf")
-
-################################################################################
-################################ normalization #################################
-################################################################################
-
-
-
-##
-## normalization
-##
-
+pl_smp_pos_bc <- t(alignBat$PTalign)
+dim(pl_smp_pos)
+dim(pl_smp_pos_bc) ## does not change dims --> no removed features
 
 
 ## define function pca_plot to create a PCA plot
@@ -221,10 +198,22 @@ pca_plot <- function(peaklist, batch, file, text=FALSE) {
     dev.off()
 }
 
+## define function boxplot_plot to create boxplot
+boxplot_plot <- function(peaklist, file) {
+    pdf(file)
+    boxplot(as.matrix(peaklist))
+    dev.off()    
+}
+
+
 setwd("~/AG-Fernie/Thomas/Data/From Shijuan/maize_pos and neg_ms1/results_ms1")
+pca_plot(pl_smp_pos_bc, batch_pos, file = "pca_peaklist_pos_batchCorr.pdf")
 pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_raw.pdf")
 pca_plot(pl_smp_pos, batch_pos, "pca_peaklist_pos_sample_raw.pdf")
 
+################################################################################
+################################ normalization #################################
+################################################################################
 
 ## get log2 of intensities and plot PCA
 pl_smp_neg <- log2(pl_smp_neg + 1)
@@ -234,34 +223,64 @@ pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_log.pdf", text=TRUE)
 pca_plot(pl_smp_pos, batch_pos, "pca_peaklist_pos_sample_log.pdf", text=TRUE)
 
 ## remove QC14, E32, C90.2 from negative since they are outliers
-pl_smp_neg <- pl_smp_neg[, !colnames(pl_smp_neg) %in% c("QC14", "E32", "C90.2")]
-batch_neg <- batch_neg[!names(batch_neg) %in% c("QC14", "E32", "C90.2")]
+tmp <- c("QC14", "E32", "C90.2")
+pl_smp_neg <- pl_smp_neg[, !colnames(pl_smp_neg) %in% tmp]
+batch_neg <- batch_neg[!names(batch_neg) %in% tmp]
+order_inj_neg <- order_inj_neg[!order_inj_neg[, "sample_name"] %in% tmp, ]
 pca_plot(pl_smp_neg, batch_neg, "pca_peaklist_neg_sample_log_withoutOutlier.pdf")
 
 ################################################################################
-## MS-Dial (LOWESS normalization tool): lowess normalization 
+####################### divide by sum of total ion count #######################
+################################################################################
+sumTIC <- apply(pl_smp_neg, 2, sum)
+pl_smp_neg_tic <- sweep(pl_smp_neg, MARGIN=2, STATS=sumTIC, FUN="/")
+sumTIC <- apply(pl_smp_pos, 2, sum)
+pl_smp_pos_tic <- sweep(pl_smp_pos, MARGIN=2, STATS=sumTIC, FUN="/")
+
+## boxplots
+boxplot_plot(pl_smp_neg, "boxplot_peaklist_neg_sample_log_raw.pdf")
+boxplot_plot(pl_smp_pos, "boxplot_peaklist_pos_sample_log_raw.pdf")
+boxplot_plot(pl_smp_neg_tic, "boxplot_peaklist_neg_sample_log_tic.pdf")
+boxplot_plot(pl_smp_pos_tic, "boxplot_peaklist_pos_sample_log_tic.pdf")
+
+## PCA plots
+pca_plot(pl_smp_neg_tic, batch_neg, "pca_peaklist_neg_sample_log_tic.pdf")
+pca_plot(pl_smp_pos_tic, batch_pos, "pca_peaklist_pos_sample_log_tic.pdf")
+#pca_plot(pl_smp_neg_batch_tic, batch_neg, "pca_peaklist_neg_sample_log_batch_tic.pdf")
+#pca_plot(pl_smp_pos_batch_tic, batch_pos, "pca_peaklist_pos_sample_log_batch_tic.pdf")
+
+################################################################################
+########## MS-Dial (LOWESS normalization tool): lowess normalization ###########
+################################################################################
 
 ## reorder pl and pl_smp according to order_inj
-pl_smp_neg <- pl_smp_neg[, order_inj_neg]
-pl_smp_pos <- pl_smp_pos[, order_inj_pos]
+pl_smp_neg_tic <- pl_smp_neg_tic[, order_inj_neg[, "sample_name"]]
+pl_smp_pos_tic <- pl_smp_pos_tic[, order_inj_pos[, "sample_name"]]
+batch_neg <- batch_neg[order_inj_neg[, "sample_name"]]
+batch_pos <- batch_pos[order_inj_pos[, "sample_name"]]
 
 ## convert to a file format that is readable by 
 ## Name Type Order Feat1 Feat2 Feat3 ...
 ## char log  num   num   num   num   ...
-pl_smp_neg_t <- cbind(Name=colnames(pl_smp_neg), Type=colnames(pl_smp_neg), Order=1:ncol(pl_smp_neg), t(pl_smp_neg))
-pl_smp_neg_t[, "Type"] <- grepl(pl_smp_neg_t[, "Type"], pattern="[Q|q][C|c]")
-pl_smp_neg_t[grep(pl_smp_neg_t[, "Name"], pattern="batch"), "Type"] <- "FALSE"
-write.table(pl_smp_neg_t, file="peaklist_neg_log_withoutOutlier.txt", sep="\t", dec=".", row.names=FALSE, quote=FALSE)
+pl_smp_neg_tic_t <- cbind(Name = order_inj_neg[, "sample_name"], 
+    Type = order_inj_neg[, "type"], Order = 1:ncol(pl_smp_neg_tic), t(pl_smp_neg_tic))
+pl_smp_neg_tic_t[, "Type"] <- grepl(pl_smp_neg_tic_t[, "Type"], pattern = "QC")
+write.table(pl_smp_neg_tic_t, file = "peaklist_neg_log_tic.txt", sep = "\t", 
+    dec = ".", row.names = FALSE, quote = FALSE)
 
-pl_smp_pos_t <- cbind(Name=colnames(pl_smp_pos), Type=colnames(pl_smp_pos), Order=1:ncol(pl_smp_pos), t(pl_smp_pos))
-pl_smp_pos_t[, "Type"] <- grepl(pl_smp_pos_t[, "Type"], pattern="[Q|q][C|c]")
-pl_smp_pos_t[grep(pl_smp_pos_t[, "Name"], pattern="batch"), "Type"] <- "FALSE"
-write.table(pl_smp_pos_t, file="peaklist_pos_log_withoutOutlier.txt", sep="\t", dec=".", row.names=FALSE, quote=FALSE)
+pl_smp_pos_tic_t <- cbind(Name = order_inj_pos[, "sample_name"], 
+    Type = order_inj_pos[, "type"], Order = 1:ncol(pl_smp_pos_tic), t(pl_smp_pos_tic))
+pl_smp_pos_tic_t[, "Type"] <- grepl(pl_smp_pos_tic_t[, "Type"], pattern = "QC")
+write.table(pl_smp_pos_tic_t, file = "peaklist_pos_log_tic.txt", sep = "\t", 
+    dec = ".", row.names = FALSE, quote = FALSE)
 ## open in MS-DIAL and normalize
 
+
 ## !! adjust file names of returned files !!
-pl_smp_neg_t_lowess <- read.table(file="peaklist_neg_log_withoutOutlier_20199231017.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
-pl_smp_pos_t_lowess <- read.table(file="peaklist_pos_log_withoutOutlier_20199231028.txt", sep="\t", header=TRUE, row.names = 1, quote="'")
+pl_smp_neg_t_lowess <- read.table(file = "peaklist_neg_log_tic_20199271620.txt", 
+    sep = "\t", header = TRUE, row.names = 1, quote = "'")
+pl_smp_pos_t_lowess <- read.table(file = "peaklist_pos_log_tic_20199271620.txt", 
+    sep = "\t", header = TRUE, row.names = 1, quote = "'")
 ##pl_smp_lowess <- t(pl_smp_t_lowess)
 tmp <- c("TYPE", "ORDER")
 pl_smp_neg_lowess <- remove_samples_df(pl_smp_neg_t_lowess, tmp)
@@ -273,67 +292,44 @@ pl_smp_pos_lowess <- t(pl_smp_pos_lowess)
 ##pl_smp_lowess <- pl_smp_lowess[!rownames(pl_smp_lowess) %in% c("TYPE", "ORDER"), ]
 mode(pl_smp_neg_lowess) <- mode(pl_smp_pos_lowess) <- "numeric"
 
-pca_plot(pl_smp_neg_lowess, batch_neg, "pca_peaklist_neg_sample_log_lowess.pdf")
-pca_plot(pl_smp_pos_lowess, batch_pos, "pca_peaklist_pos_sample_log_lowess.pdf")
+pca_plot(pl_smp_neg_lowess, batch_neg, "pca_peaklist_neg_sample_log_lowess.pdf", text = TRUE)
+pca_plot(pl_smp_pos_lowess, batch_pos, "pca_peaklist_pos_sample_log_lowess.pdf", text = TRUE)
 ## do not use LOWESS
-
-boxplot_plot <- function(peaklist, file) {
-    pdf(file)
-    boxplot(as.matrix(peaklist))
-    dev.off()    
-}
-boxplot_plot(pl_smp_neg, "boxplot_peaklist_neg_sample_log.pdf")
-boxplot_plot(pl_smp_pos, "boxplot_peaklist_pos_sample_log.pdf")
-
 
 ################################################################################
 ############################### batch correction ###############################
 ################################################################################
 ## batch correction using removeBatchEffect
-smp_neg <- data.frame(sample = colnames(pl_smp_neg), colour = batch_neg, day = batch_neg)
-smp_pos <- data.frame(sample = colnames(pl_smp_pos), colour = batch_pos, day = batch_pos)
-pl_smp_neg_batch <- limma::removeBatchEffect(x = pl_smp_neg, batch = smp_neg[, 3])
-pl_smp_pos_batch <- limma::removeBatchEffect(x = pl_smp_pos, batch = smp_pos[, 3])
+smp_neg <- data.frame(sample = colnames(pl_smp_neg_tic), colour = batch_neg, day = batch_neg)
+smp_pos <- data.frame(sample = colnames(pl_smp_pos_tic), colour = batch_pos, day = batch_pos)
+pl_smp_neg_batch <- limma::removeBatchEffect(x = pl_smp_neg_tic, batch = smp_neg[, 3])
+pl_smp_pos_batch <- limma::removeBatchEffect(x = pl_smp_pos_tic, batch = smp_pos[, 3])
 
 pca_plot(pl_smp_neg_batch, batch_neg, "pca_peaklist_neg_sample_log_batch.pdf")
-pca_plot(pl_smp_pos_batch, batch_pos, "pca_peaklist_pos_sample_log_batch.pdf")
+pca_plot(pl_smp_pos_batch, batch_pos, "pca_peaklist_pos_sample_log_batch.pdf", text = TRUE)
+
+## outliers in PCA --> samples are all at the end of batch2 --> assign these 
+## to batch3 (batchC) and rerun removeBatchEffect
+tmp <- c("C261.2", "C28.2", "E14", "C282.1", "C56.2", "C189.2", "C63.1", 
+    "C285.2", "C92.3.2", "C170.1", "C110.2", "QC24", "Y119", "C315.1", 
+    "C92.3.1", "C126.1", "C143.1", "C73.2", "C289.2")
+smp_pos[smp_pos[, "sample"] %in% tmp, "colour"] <- "batchC"
+smp_pos[smp_pos[, "sample"] %in% tmp, "day"] <- "batchC"
+pl_smp_pos_batch <- limma::removeBatchEffect(x = pl_smp_pos_tic, batch = smp_pos[, 3])
+pca_plot(pl_smp_pos_batch, batch_pos, "pca_peaklist_pos_sample_log_batch_rename.pdf", text = TRUE)
 
 boxplot_plot(pl_smp_neg_batch, "boxplot_peaklist_neg_sample_log_batch.pdf")
 boxplot_plot(pl_smp_pos_batch, "boxplot_peaklist_pos_sample_log_batch.pdf")
 
-################################################################################
-####################### divide by sum of total ion count #######################
-################################################################################
-sumTIC <- apply(pl_smp_neg, 2, sum)
-pl_smp_tic <- sweep(pl_smp_neg, MARGIN=2, STATS=sumTIC, FUN="/")
-sumTIC <- apply(pl_smp_pos, 2, sum)
-pl_smp_tic <- sweep(pl_smp_pos, MARGIN=2, STATS=sumTIC, FUN="/")
-
-sumTIC <- apply(pl_smp_neg_batch, 2, sum)
-pl_smp_neg_batch_tic <- sweep(pl_smp_neg_batch, MARGIN=2, STATS=sumTIC, FUN="/")
-sumTIC <- apply(pl_smp_pos_batch, 2, sum)
-pl_smp_pos_batch_tic <- sweep(pl_smp_pos_batch, MARGIN=2, STATS=sumTIC, FUN="/")
-
-## boxplots
-boxplot_plot(pl_smp_neg_tic, "boxplot_peaklist_neg_sample_log_tic.pdf")
-boxplot_plot(pl_smp_pos_tic, "boxplot_peaklist_pos_sample_log_tic.pdf")
-boxplot_plot(pl_smp_neg_batch_tic, "boxplot_peaklist_neg_sample_log_batch_tic.pdf")
-boxplot_plot(pl_smp_pos_batch_tic, "boxplot_peaklist_pos_sample_log_batch_tic.pdf")
-
-## PCA plots
-pca_plot(pl_smp_neg_tic, batch_neg, "pca_peaklist_neg_sample_log_tic.pdf")
-pca_plot(pl_smp_pos_tic, batch_pos, "pca_peaklist_pos_sample_log_tic.pdf")
-pca_plot(pl_smp_neg_batch_tic, batch_neg, "pca_peaklist_neg_sample_log_batch_tic.pdf")
-pca_plot(pl_smp_pos_batch_tic, batch_pos, "pca_peaklist_pos_sample_log_batch_tic.pdf")
 
 ################################################################################
-################## choose pl_smp_batch_tic and write to file ###################
+############################## write to a file  ################################
 ################################################################################
 
 mzRT <- pl_neg[, c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "npeaks", "isotopes", "adduct", "pcgroup")]
-pl_final <- cbind(mzRT, pl_smp_neg_batch_tic)
-write.table(pl_final, file = "peaklist_neg_log_batch_tic_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
+pl_final <- cbind(mzRT, pl_smp_neg_batch)
+write.table(pl_final, file = "peaklist_neg_log_tic_batch_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
 
 mzRT <- pl_pos[, c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "npeaks", "isotopes", "adduct", "pcgroup")]
-pl_final <- cbind(mzRT, pl_smp_pos_batch_tic)
-write.table(pl_final, file = "peaklist_pos_log_batch_tic_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
+pl_final <- cbind(mzRT, pl_smp_pos_batch)
+write.table(pl_final, file = "peaklist_pos_log_tic_batch_final_swM.txt", sep="\t", dec=".", quote=FALSE) 
