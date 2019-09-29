@@ -218,24 +218,29 @@ setwd("/home/thomas/Projects/molNetworking_swM/data_MS2/neg")
 
 ## 1) 
 ################################### negative ###################################
-## load file that contains alignment information
-aln_neg <- read.table("PeakID_0_2019822154.txt", sep="\t", fill=TRUE, skip=4, 
-                      header=TRUE, stringsAsFactors=FALSE, quote="\"")
-## truncate file
-## MK: maize kernel, ML: maize leaf, QC: sweet maize
-cols_keep <- c("Alignment.ID", "Average.Rt.min.", "Average.Mz", 
-    "Metabolite.name", "Adduct.type", 
-    "mixMK.ddms2.CID30", "mixMK.ddms2.CID40", 
-    "mixMK.ddms2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50",
-    "mixML.ddms2.CID30", "mixML.ddms2.CID40",
-    "mixML.ddms2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50",
-    "QC.ddms.CID30", "QC.ddms.CID40", 
-    "QC.ddms.HCD30", "QC.ddms.HCD40", "QC.ddms.HCD50")
+## remove manually the first four rows, and the columns "Post curation result",
+## "Fill %", "MS/MS assigned", "Reference RT", "Reference m/z", "Formula",
+## "Ontology", "INCHIKEY", "SMILES", "MSI level", "Comment", 
+## "Mannualy modified", "Isotope tracking parent ID", 
+## "Isotope tracking weight number", "Total score", "RT similarity", 
+## "Dot product", "Reverse dot product", "Fragment presence %", "S/N average",
+## "Spectrum reference file name", "MS1 isotopic spectrum", "MS/MS spectrum"
+##
+## save the file to PeakID_0_[pos/neg]_cut.txt
 
-         
-aln_neg <- aln_neg[, cols_keep]
+## load file that contains alignment information
+aln_neg <- read.table("PeakID_0_neg_cut.txt", sep="\t", 
+                      header=TRUE, stringsAsFactors=FALSE, quote='"')
+## truncate file
+## mixMK: maize kernel, mixML: maize leaf, QC: sweet maize
+
+## remove qcMK and qcML columns
+aln_neg <- aln_neg[, !colnames(aln_neg) %in% c("qcMK.ddms2.CID30", 
+        "qcMK.ddms2.HCD40", "qcML.ddms2.CID30", "qcML.ddms2.HCD40")]
+
 ## keep only these rows that have alignment information
-inds_remove <- apply(aln_neg[, cols_keep[-c(1:5)]], 1, function(x) all(x == "-2"))
+cols <- colnames(aln_neg)
+inds_remove <- apply(aln_neg[, cols[-c(1:5)]], 1, function(x) all(x == "-2"))
 aln_neg <- aln_neg[!inds_remove, ]
 ## remove lines that contain any NA
 aln_neg <- aln_neg[!apply(aln_neg, 1, function(x) any(is.na(x))), ]
@@ -286,22 +291,18 @@ swM_hcd50_neg <- read.table("QC-ddms-HCD50.txt", sep="\t", fill=TRUE,
 ################################### positive ###################################
 ## load file that contains alignment information
 setwd("../pos")
-aln_pos <- read.table("PeakID_0_20198221558.txt", sep="\t", fill=TRUE, 
-                      skip=4, header=TRUE, stringsAsFactors=FALSE, quote="'")
+aln_pos <- read.table("PeakID_0_pos_cut.txt", sep="\t", 
+                      header=TRUE, stringsAsFactors=FALSE, quote='"')
 ## truncate file
 ## MK: maize kernel, ML: maize, QCsm: sweet maize
-cols_keep <- c("Alignment.ID", "Average.Rt.min.", "Average.Mz", 
-    "Metabolite.name", "Adduct.type",
-    "mixMK.ddms2.CID30" ,"mixMK.ddms2.CID40",
-    "mixMK.ddms2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50",
-    "mixML.pos.ddms2.CID30", "mixML.pos.ddms2.CID40", 
-    "mixML.pos.ddms2.HCD30", "mixML.pos.ddms2.HCD40", "mixML.pos.ddms2.HCD50",
-    "QCsm.pos.ddms.CID30", "QCsm.pos.ddms.CID40",
-    "QCsm.pos.ddms.HCD30", "QCsm.pos.ddms.HCD40", "QCsm.pos.ddms.HCD50")
 
-aln_pos <- aln_pos[, cols_keep]
+## remove qcMK and qcML columns
+aln_pos <- aln_pos[, !colnames(aln_pos) %in% 
+                       c("qcMK.ddms2.CID30", "qcMK.ddms2.HCD40")]
+
 ## keep only these rows that have alignment information
-inds_remove <- apply(aln_pos[,cols_keep[-c(1:5)]], 1, function(x) all(x == "-2"))
+cols <- colnames(aln_pos)
+inds_remove <- apply(aln_pos[, cols[-c(1:5)]], 1, function(x) all(x == "-2"))
 aln_pos <- aln_pos[!inds_remove, ]
 ## remove lines that contain any NA
 aln_pos <- aln_pos[!apply(aln_pos, 1, function(x) any(is.na(x))), ]
