@@ -549,11 +549,11 @@ spl_swM_hcd_neg <- construct_Spectrum2(assembly_swM_hcd_neg)
 ## pos
 ## kernel 
 spl_MK_cid_pos <- construct_Spectrum2(assembly_MK_cid_pos)
-spN_MK_hcd_pos <- construct_Spectrum2(assembly_MK_hcd_pos)
+spl_MK_hcd_pos <- construct_Spectrum2(assembly_MK_hcd_pos)
 
 ## leaf 
 spl_ML_cid_pos <- construct_Spectrum2(assembly_ML_cid_pos)
-spN_ML_hcd_pos <- construct_Spectrum2(assembly_ML_hcd_pos)
+spl_ML_hcd_pos <- construct_Spectrum2(assembly_ML_hcd_pos)
 
 ## sweet maize
 spl_swM_cid_pos <- construct_Spectrum2(assembly_swM_cid_pos)
@@ -565,32 +565,32 @@ spl_swM_hcd_pos <- construct_Spectrum2(assembly_swM_hcd_pos)
 #' @name create_Spectra
 #' @description The function `create_Spectra` creates from a list of `Spectrum2`
 #' objects a `Spectra` object. 
-#' @param spN_l `list` of `Spectrum2` objects
+#' @param spl `list` of `Spectrum2` objects
 #' @details The function `create_Spectra` creates the `Spectra` object from 
 #' a list of `Spectrum2` objects. It binds a `DataFrame` object 
 #' as `elementMetadata` with the columns `"precursorMz"` containing 
 #' the m/z values of the precursor ion, `"rt"` containing the retention time 
 #' and `"show"` set to `TRUE` for all `Spectrum2` entries. 
-#' @usage create_Spectra(spN_l)
+#' @usage create_Spectra(spl)
 #' @author Thomas Naake \email{thomasnaake@@googlemail.com}
 #' @return `Spectra` object
 #' @examples
-#' create_Spectra(spN)
-create_Spectra <- function(spN) {
-    MSnbase::Spectra(spN, 
+#' create_Spectra(spl)
+create_Spectra <- function(spl) {
+    MSnbase::Spectra(spl, 
         elementMetadata=S4Vectors::DataFrame(
-            precursorMz = unlist(lapply(spN, function(x) x@precursorMz)),
-            rt = unlist(lapply(spN, function(x) x@rt)), 
-            show=rep(TRUE, length(spN)))) 
+            precursorMz = unlist(lapply(spl, function(x) x@precursorMz)),
+            rt = unlist(lapply(spl, function(x) x@rt)), 
+            show=rep(TRUE, length(spl)))) 
 }
 
 ## neg 
 spectra_MK_cid_neg <- create_Spectra(spl_MK_cid_neg)
-spectra_MK_hcd_neg <- create_Spectra(spN_MK_hcd_l_neg)
-spectra_ML_cid_neg <- create_Spectra(spN_ML_cid_l_neg)
-spectra_ML_hcd_neg <- create_Spectra(spN_ML_hcd_l_neg)
-spectra_swM_cid_neg <- create_Spectra(spN_swM_cid_l_neg)
-spectra_swM_hcd_neg <- create_Spectra(spN_swM_hcd_l_neg)
+spectra_MK_hcd_neg <- create_Spectra(spl_MK_hcd_neg)
+spectra_ML_cid_neg <- create_Spectra(spl_ML_cid_neg)
+spectra_ML_hcd_neg <- create_Spectra(spl_ML_hcd_neg)
+spectra_swM_cid_neg <- create_Spectra(spl_swM_cid_neg)
+spectra_swM_hcd_neg <- create_Spectra(spl_swM_hcd_neg)
 
 save(spl_MK_cid_neg, spectra_MK_cid_neg, file = "ms2_spectra_MK_cid_neg.RData")
 save(spl_MK_hcd_neg, spectra_MK_hcd_neg, file = "ms2_spectra_MK_hcd_neg.RData")
@@ -600,12 +600,12 @@ save(spl_swM_cid_neg, spectra_swM_cid_neg, file = "ms2_spectra_swM_cid_neg.RData
 save(spl_swM_hcd_neg, spectra_swM_hcd_neg, file = "ms2_spectra_swM_hcd_neg.RData")
 
 ## pos
-spectra_MK_cid_pos <- create_Spectra(spN_MK_cid_l_pos)
-spectra_MK_hcd_pos <- create_Spectra(spN_MK_hcd_l_pos)
-spectra_ML_cid_pos <- create_Spectra(spN_ML_cid_l_pos)
-spectra_ML_hcd_pos <- create_Spectra(spN_ML_hcd_l_pos)
-spectra_swM_cid_pos <- create_Spectra(spN_swM_cid_l_pos)
-spectra_swM_hcd_pos <- create_Spectra(spN_swM_hcd_l_pos)
+spectra_MK_cid_pos <- create_Spectra(spl_MK_cid_pos)
+spectra_MK_hcd_pos <- create_Spectra(spl_MK_hcd_pos)
+spectra_ML_cid_pos <- create_Spectra(spl_ML_cid_pos)
+spectra_ML_hcd_pos <- create_Spectra(spl_ML_hcd_pos)
+spectra_swM_cid_pos <- create_Spectra(spl_swM_cid_pos)
+spectra_swM_hcd_pos <- create_Spectra(spl_swM_hcd_pos)
 
 save(spl_MK_cid_pos, spectra_MK_cid_pos, file = "ms2_spectra_MK_cid_pos.RData")
 save(spl_MK_hcd_pos, spectra_MK_hcd_pos, file = "ms2_spectra_MK_hcd_pos.RData")
