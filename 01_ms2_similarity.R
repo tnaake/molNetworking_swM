@@ -1,5 +1,5 @@
 ## source the functions file
-source("01_ms2_similarity_functions.R")
+source("~/Projects/molNetworking_swM/01_ms2_similarity_functions.R")
 
 ## use other function from MetCirc (>v1.15.0) and MSnbase (>v2.11.4) and 
 ## igraph (>v1.2.4.1)for visualization 
@@ -10,7 +10,7 @@ library(igraph)
 ################################## workflow ####################################
 ################################################################################
 ## Maize MS2: create a similarity network
-setwd("/home/thomas/Projects/molNetworking_swM/data_MS2/neg")
+setwd("~/Projects/molNetworking_swM/data_MS2/neg")
 
 ## 1) 
 ################################### negative ###################################
@@ -236,7 +236,7 @@ swM_hcd50_pos <- swM_hcd50_pos[swM_hcd50_pos[, "PeakID"] %in% aln_pos[, "QCsm.po
 ## assemble spectra
 ## neg
 assembly_MK_cid_neg <- assemblySpectra(spectra=list(MK_cid30_neg, MK_cid40_neg), 
-    aln=aln_neg, cols_aln=c("mixMK.ddm2.CID30", "mixMK.ddms2.CID40"),
+    aln=aln_neg, cols_aln=c("mixMK.ddms2.CID30", "mixMK.ddms2.CID40"),
     sample_name="MK_CID")
 assembly_MK_hcd_neg <- assemblySpectra(spectra=list(MK_hcd30_neg, MK_hcd40_neg, MK_hcd50_neg), 
     aln=aln_neg, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
