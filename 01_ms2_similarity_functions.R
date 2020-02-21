@@ -184,7 +184,8 @@ binSpectra <- function(spectra, tol=0.01, fun=c("max", "sum")) {
             ## remove NA values
             spectra <- spectra[!is.na(spectra[,1]), ]
         } else {
-            spectra <- matrix(c(frag_s[which.max(spectra[, 2])], max(spectra[, 2])), ncol=2)
+            spectra <- matrix(c(frag_s[which.max(spectra[, 2])], max(spectra[, 2])), 
+                ncol = 2)
         }
     }
     return(spectra)
@@ -217,7 +218,8 @@ binSpectra <- function(spectra, tol=0.01, fun=c("max", "sum")) {
 #' @examples
 #' sp <- list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50)
 #' deconvolute(spectra=sp, tol=0.01)
-deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50), tol=0.01) {
+deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50), 
+    tol = 0.01) {
     
     ## rbind spectra
     spectra <- do.call("rbind", spectra)
