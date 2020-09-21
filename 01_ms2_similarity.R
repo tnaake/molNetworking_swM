@@ -192,14 +192,14 @@ swM_hcd50_pos <- swM_hcd50_pos[swM_hcd50_pos[, "MSMS.spectrum"] != "", cols_keep
 ## kernel 
 MK_cid30_neg <- MK_cid30_neg[MK_cid30_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.CID30"],]
 MK_cid40_neg <- MK_cid40_neg[MK_cid40_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.CID40"],]
-MK_hcd30_neg <- MK_hcd30_neg[MK_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddm2.HCD30"],]
+MK_hcd30_neg <- MK_hcd30_neg[MK_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.HCD30"],]
 MK_hcd40_neg <- MK_hcd40_neg[MK_hcd40_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.HCD40"],]
 MK_hcd50_neg <- MK_hcd50_neg[MK_hcd50_neg[, "PeakID"] %in% aln_neg[, "mixMK.ddms2.HCD50"],]
 
 ## leaf 
 ML_cid30_neg <- ML_cid30_neg[ML_cid30_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.CID30"],]
 ML_cid40_neg <- ML_cid40_neg[ML_cid40_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.CID40"],]
-ML_hcd30_neg <- ML_hcd30_neg[ML_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixML.ddm2.HCD30"],]
+ML_hcd30_neg <- ML_hcd30_neg[ML_hcd30_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.HCD30"],]
 ML_hcd40_neg <- ML_hcd40_neg[ML_hcd40_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.HCD40"],]
 ML_hcd50_neg <- ML_hcd50_neg[ML_hcd50_neg[, "PeakID"] %in% aln_neg[, "mixML.ddms2.HCD50"],]
 
@@ -214,14 +214,14 @@ swM_hcd50_neg <- swM_hcd50_neg[swM_hcd50_neg[, "PeakID"] %in% aln_neg[, "QC.ddms
 ## kernel 
 MK_cid30_pos <- MK_cid30_pos[MK_cid30_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.CID30"],]
 MK_cid40_pos <- MK_cid40_pos[MK_cid40_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.CID40"],]
-MK_hcd30_pos <- MK_hcd30_pos[MK_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddm2.HCD30"],]
+MK_hcd30_pos <- MK_hcd30_pos[MK_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.HCD30"],]
 MK_hcd40_pos <- MK_hcd40_pos[MK_hcd40_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.HCD40"],]
 MK_hcd50_pos <- MK_hcd50_pos[MK_hcd50_pos[, "PeakID"] %in% aln_pos[, "mixMK.ddms2.HCD50"],]
 
 ## leaf 
 ML_cid30_pos <- ML_cid30_pos[ML_cid30_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddms2.CID30"],]
 ML_cid40_pos <- ML_cid40_pos[ML_cid40_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddms2.CID40"],]
-ML_hcd30_pos <- ML_hcd30_pos[ML_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddm2.HCD30"],]
+ML_hcd30_pos <- ML_hcd30_pos[ML_hcd30_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddms2.HCD30"],]
 ML_hcd40_pos <- ML_hcd40_pos[ML_hcd40_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddms2.HCD40"],]
 ML_hcd50_pos <- ML_hcd50_pos[ML_hcd50_pos[, "PeakID"] %in% aln_pos[, "mixML.pos.ddms2.HCD50"],]
 
@@ -239,13 +239,13 @@ assembly_MK_cid_neg <- assemblySpectra(spectra=list(MK_cid30_neg, MK_cid40_neg),
     aln=aln_neg, cols_aln=c("mixMK.ddms2.CID30", "mixMK.ddms2.CID40"),
     sample_name="MK_CID")
 assembly_MK_hcd_neg <- assemblySpectra(spectra=list(MK_hcd30_neg, MK_hcd40_neg, MK_hcd50_neg), 
-    aln=aln_neg, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
+    aln=aln_neg, cols_aln=c("mixMK.ddms2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
     sample_name="MK_HCD")
 assembly_ML_cid_neg <- assemblySpectra(spectra=list(ML_cid30_neg, ML_cid40_neg), 
-    aln=aln_neg, cols_aln=c("mixML.ddm2.CID30", "mixML.ddms2.CID40"),
+    aln=aln_neg, cols_aln=c("mixML.ddms2.CID30", "mixML.ddms2.CID40"),
     sample_name="ML_CID")
 assembly_ML_hcd_neg <- assemblySpectra(spectra=list(ML_hcd30_neg, ML_hcd40_neg, ML_hcd50_neg), 
-    aln=aln_neg, cols_aln=c("mixML.ddm2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
+    aln=aln_neg, cols_aln=c("mixML.ddms2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
     sample_name="ML_HCD")
 assembly_swM_cid_neg <- assemblySpectra(spectra=list(swM_cid30_neg, swM_cid40_neg), ## 1359 1319
     aln=aln_neg, cols_aln=c("QC.ddms.CID30", "QC.ddms.CID40"),
@@ -263,18 +263,27 @@ save(assembly_ML_hcd_neg, file="ms2_assembly_ML_hcd_neg.RData")
 save(assembly_swM_cid_neg, file="ms2_assembly_swM_cid_neg.RData")
 save(assembly_swM_hcd_neg, file="ms2_assembly_swM_hcd_neg.RData")
 
+## load
+load("ms2_assembly_MK_cid_neg.RData")
+load("ms2_assembly_MK_hcd_neg.RData")
+load("ms2_assembly_ML_cid_neg.RData")
+load("ms2_assembly_ML_hcd_neg.RData")
+load("ms2_assembly_swM_cid_neg.RData")
+load("ms2_assembly_swM_hcd_neg.RData")
+
+
 ## pos
 assembly_MK_cid_pos <- assemblySpectra(spectra=list(MK_cid30_pos, MK_cid40_pos), 
-    aln=aln_pos, cols_aln=c("mixMK.ddm2.CID30", "mixMK.ddms2.CID40"),
+    aln=aln_pos, cols_aln=c("mixMK.ddms2.CID30", "mixMK.ddms2.CID40"),
     sample_name="MK_CID")
 assembly_MK_hcd_pos <- assemblySpectra(spectra=list(MK_hcd30_pos, MK_hcd40_pos, MK_hcd50_pos), 
-    aln=aln_pos, cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
+    aln=aln_pos, cols_aln=c("mixMK.ddms2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
     sample_name="MK_HCD")
-assembly_ML_cid_pos <- assemblySpectra(spectra=list(ML_cid30_pos, ML_cid40_pos), 
-    aln=aln_pos, cols_aln=c("mixML.ddm2.CID30", "mixML.ddms2.CID40"),
+assembly_ML_cid_pos <- assemblySpectra(spectra=list(ML_cid30_pos, ML_cid40_pos),
+    aln=aln_pos, cols_aln=c("mixML.pos.ddms2.CID30", "mixML.pos.ddms2.CID40"),
     sample_name="ML_CID")
-assembly_ML_hcd_pos <- assemblySpectra(spectra=list(ML_hcd30_pos, ML_hcd40_pos, ML_hcd50_pos), 
-    aln=aln_pos, cols_aln=c("mixML.ddm2.HCD30", "mixML.ddms2.HCD40", "mixML.ddms2.HCD50"),
+assembly_ML_hcd_pos <- assemblySpectra(spectra=list(ML_hcd30_pos, ML_hcd40_pos, ML_hcd50_pos),
+    aln=aln_pos, cols_aln=c("mixML.pos.ddms2.HCD30", "mixML.pos.ddms2.HCD40", "mixML.pos.ddms2.HCD50"),
     sample_name="ML_HCD")
 assembly_swM_cid_pos <- assemblySpectra(spectra=list(swM_cid30_pos, swM_cid40_pos), 
     aln=aln_pos, cols_aln=c("QCsm.pos.ddms.CID30", "QCsm.pos.ddms.CID40"),
@@ -290,6 +299,14 @@ save(assembly_ML_cid_pos, file="ms2_assembly_ML_cid_pos.RData")
 save(assembly_ML_hcd_pos, file="ms2_assembly_ML_hcd_pos.RData")
 save(assembly_swM_cid_pos, file="ms2_assembly_swM_cid_pos.RData")
 save(assembly_swM_hcd_pos, file="ms2_assembly_swM_hcd_pos.RData")
+
+## load
+load("ms2_assembly_MK_cid_pos.RData")
+load("ms2_assembly_MK_hcd_pos.RData")
+load("ms2_assembly_ML_cid_pos.RData")
+load("ms2_assembly_ML_hcd_pos.RData")
+load("ms2_assembly_swM_cid_pos.RData")
+load("ms2_assembly_swM_hcd_pos.RData")
 
 ## 6) 
 ## convert final deconvoluted spectra to Spectrum2 objects from MSnbase
