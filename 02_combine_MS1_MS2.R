@@ -32,7 +32,7 @@ pl_cid_pos_map <- map_precursor(spectra_swM_cid_pos, pl_pos_swM, ppm = 20,
 ## sweet maize HCD, positive
 pl_hcd_pos_map <- map_precursor(spectra_swM_hcd_pos, pl_pos_swM, ppm = 20, 
     rt_tol = 0.35, rt_ms1 = "seconds")
-
+    
 ## write the peaklist table to a file
 setwd("/home/thomas/Projects/molNetworking_swM/results_MS1/")
 write.table(pl_cid_neg_map, file = "peaklist_neg_swM_cid_map.txt", sep = "\t",

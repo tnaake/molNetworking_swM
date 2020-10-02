@@ -355,6 +355,12 @@ save(spl_ML_cid_neg, spectra_ML_cid_neg, file = "ms2_spectra_ML_cid_neg.RData")
 save(spl_ML_hcd_neg, spectra_ML_hcd_neg, file = "ms2_spectra_ML_hcd_neg.RData")
 save(spl_swM_cid_neg, spectra_swM_cid_neg, file = "ms2_spectra_swM_cid_neg.RData")
 save(spl_swM_hcd_neg, spectra_swM_hcd_neg, file = "ms2_spectra_swM_hcd_neg.RData")
+load("ms2_spectra_MK_cid_neg.RData")
+load("ms2_spectra_MK_hcd_neg.RData")
+load("ms2_spectra_ML_cid_neg.RData")
+load("ms2_spectra_ML_hcd_neg.RData")
+load("ms2_spectra_swM_cid_neg.RData")
+load("ms2_spectra_swM_hcd_neg.RData")
 
 ## pos
 spectra_MK_cid_pos <- create_Spectra(spl_MK_cid_pos)
@@ -370,6 +376,13 @@ save(spl_ML_cid_pos, spectra_ML_cid_pos, file = "ms2_spectra_ML_cid_pos.RData")
 save(spl_ML_hcd_pos, spectra_ML_hcd_pos, file = "ms2_spectra_ML_hcd_pos.RData")
 save(spl_swM_cid_pos, spectra_swM_cid_pos, file = "ms2_spectra_swM_cid_pos.RData")
 save(spl_swM_hcd_pos, spectra_swM_hcd_pos, file = "ms2_spectra_swM_hcd_pos.RData")
+
+load("ms2_spectra_MK_cid_pos.RData")
+load("ms2_spectra_MK_hcd_pos.RData")
+load("ms2_spectra_ML_cid_pos.RData")
+load("ms2_spectra_ML_hcd_pos.RData")
+load("ms2_spectra_swM_cid_pos.RData")
+load("ms2_spectra_swM_hcd_pos.RData")
 
 ## 8) 
 ## calculate pair-wise similarities using the normalizeddotproduct
@@ -389,6 +402,14 @@ save(similarityMat_ML_hcd_neg, file = "ms2_similarityMat_ML_hcd_neg.RData")
 save(similarityMat_swM_cid_neg, file = "ms2_similarityMat_swM_cid_neg.RData")
 save(similarityMat_swM_hcd_neg, file = "ms2_similarityMat_swM_hcd_neg.RData")
 
+load("ms2_similarityMat_MK_cid_neg.RData")
+load("ms2_similarityMat_MK_hcd_neg.RData")
+load("ms2_similarityMat_ML_cid_neg.RData")
+load("ms2_similarityMat_ML_hcd_neg.RData")
+load("ms2_similarityMat_swM_cid_neg.RData")
+load("ms2_similarityMat_swM_hcd_neg.RData")
+
+
 ## pos 
 similarityMat_MK_cid_pos <- compare_Spectra(spectra_MK_cid_pos, fun=normalizeddotproduct, binSize=0.01)
 similarityMat_MK_hcd_pos <- compare_Spectra(spectra_MK_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
@@ -403,6 +424,13 @@ save(similarityMat_ML_cid_pos, file = "ms2_similarityMat_ML_cid_pos.RData")
 save(similarityMat_ML_hcd_pos, file = "ms2_similarityMat_ML_hcd_pos.RData")
 save(similarityMat_swM_cid_pos, file = "ms2_similarityMat_swM_cid_pos.RData")
 save(similarityMat_swM_hcd_pos, file = "ms2_similarityMat_swM_hcd_pos.RData")
+
+load("ms2_similarityMat_MK_cid_pos.RData")
+load("ms2_similarityMat_MK_hcd_pos.RData")
+load("ms2_similarityMat_ML_cid_pos.RData")
+load("ms2_similarityMat_ML_hcd_pos.RData")
+load("ms2_similarityMat_swM_cid_pos.RData")
+load("ms2_similarityMat_swM_hcd_pos.RData")
 
 ## 9) 
 ## visualize network 
