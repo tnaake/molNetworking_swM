@@ -385,7 +385,7 @@ get_network_plot <- function(similarityMat, assembly, threshold = 0.05, file) {
 #'
 #' @title Map precursors of MS2 to MS1
 #'
-#' @description The function `map_precursor` takes a `Spectra` objects
+#' @description The function `map_precursor` takes a `Spectra` object
 #' containing MS2 information and a peaklist `matrix` with MS1 information and
 #' returns those features in the MS1 `matrix` whose features with m/z and
 #' retention time pairs match to the precursor ions of the `Spectra` object.
@@ -440,7 +440,7 @@ map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15, rt_ms1 = c
         ## add information of the mapped Spectrum2
         if (nrow(pl) > 0) pl <- cbind(spectra=names(spectra)[x], pl)
         
-        ## return
+        ## return   
         return(pl)
     })
     

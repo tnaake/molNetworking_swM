@@ -26,7 +26,7 @@ setwd("~/Projects/molNetworking_swM/data_MS2/neg")
 
 ## load file that contains alignment information
 aln_neg <- read.table("PeakID_0_neg_cut.txt", sep="\t", 
-                      header=TRUE, stringsAsFactors=FALSE, quote='"')
+    header=TRUE, stringsAsFactors=FALSE, quote='"')
 ## truncate file
 ## mixMK: maize kernel, mixML: maize leaf, QC: sweet maize
 
@@ -47,54 +47,54 @@ aln_neg <- aln_neg[!apply(aln_neg, 1, function(x) any(is.na(x))), ]
 
 ## for kernel CID
 MK_cid30_neg <- read.table("mixMK-ddms2-CID30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_cid40_neg <- read.table("mixMK-ddms2-CID40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for kernel HCD
 MK_hcd30_neg <- read.table("mixMK-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_hcd40_neg <- read.table("mixMK-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_hcd50_neg <- read.table("mixMK-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ## for leaf CID
 ML_cid30_neg <- read.table("mixML-ddms2-CID30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_cid40_neg <- read.table("mixML-ddms2-CID40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for leaf HCD
 ML_hcd30_neg <- read.table("mixML-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_hcd40_neg <- read.table("mixML-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_hcd50_neg <- read.table("mixML-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ## for sweet maize CID
 swM_cid30_neg <- read.table("QC-ddms-CID30.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_cid40_neg <- read.table("QC-ddms-CID40.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for sweet maize HCD
 swM_hcd30_neg <- read.table("QC-ddms-HCD30.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_hcd40_neg <- read.table("QC-ddms-HCD40.txt", sep="\t", fill=TRUE,
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_hcd50_neg <- read.table("QC-ddms-HCD50.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ################################### positive ###################################
 ## load file that contains alignment information
 setwd("../pos")
 aln_pos <- read.table("PeakID_0_pos_cut.txt", sep="\t", 
-                      header=TRUE, stringsAsFactors=FALSE, quote='"')
+    header=TRUE, stringsAsFactors=FALSE, quote='"')
 ## truncate file
 ## MK: maize kernel, ML: maize, QCsm: sweet maize
 
 ## remove qcMK and qcML columns
 aln_pos <- aln_pos[, !colnames(aln_pos) %in% 
-                       c("qcMK.ddms2.CID30", "qcMK.ddms2.HCD40")]
+    c("qcMK.ddms2.CID30", "qcMK.ddms2.HCD40")]
 
 ## keep only these rows that have alignment information
 cols <- colnames(aln_pos)
@@ -108,42 +108,42 @@ aln_pos <- aln_pos[!apply(aln_pos, 1, function(x) any(is.na(x))), ]
 ## for CID only 30 and 40 eV available, for HCD 30, 40 and 50 eV available
 ## for kernel CID
 MK_cid30_pos <- read.table("mixMK-ddms2-CID30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_cid40_pos <- read.table("mixMK-ddms2-CID40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for kernel HCD
 MK_hcd30_pos <- read.table("mixMK-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_hcd40_pos <- read.table("mixMK-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 MK_hcd50_pos <- read.table("mixMK-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ## for leaf CID
 ML_cid30_pos <- read.table("mixML-pos-ddms2-CID30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_cid40_pos <- read.table("mixML-pos-ddms2-CID40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for leaf HCD
 ML_hcd30_pos <- read.table("mixML-pos-ddms2-HCD30.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_hcd40_pos <- read.table("mixML-pos-ddms2-HCD40.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ML_hcd50_pos <- read.table("mixML-pos-ddms2-HCD50.txt", sep="\t", fill=TRUE, 
-                           header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ## for sweet maize CID
 swM_cid30_pos <- read.table("QCsm-pos-ddms-CID30.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_cid40_pos <- read.table("QCsm-pos-ddms-CID40.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 ## for sweet maize HCD
 swM_hcd30_pos <- read.table("QCsm-pos-ddms-HCD30.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_hcd40_pos <- read.table("QCsm-pos-ddms-HCD40.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 swM_hcd50_pos <- read.table("QCsm-pos-ddms-HCD50.txt", sep="\t", fill=TRUE, 
-                            header=TRUE, stringsAsFactors=FALSE, quote="\"")
+    header=TRUE, stringsAsFactors=FALSE, quote="\"")
 
 ## 3) 
 ## truncate files and keep only columns that are of interest
