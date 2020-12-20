@@ -1,0 +1,114 @@
+## read the files that contain the mapping information
+setwd("/home/thomas/Documents/PhD/collaborations/Shijuan/")
+
+options(stringsAsFactors = FALSE)
+cid_pos <- read.table("Pos_cid_Peak_SNP_locus_LD_candidate.genes.csv", 
+    header = TRUE, sep = ",", quote = "`")
+cid_neg <- read.table("Neg_cid_Peak_SNP_locus_LD_candidate.genes.csv", 
+    header = TRUE, sep = ",", quote = "`")
+hcd_pos <- read.table("Pos_hcd_Peak_SNP_locus_LD_candidate.genes.csv", 
+    header = TRUE, sep = ",", quote = "`")
+hcd_neg <- read.table("Neg_hcd_Peak_SNP_locus_LD_candidate.genes.csv", 
+    header = TRUE, sep = ",", quote = "`")
+
+setwd("/home/thomas/Projects/molNetworking_swM/results_MS1/")
+tmp <- read.table("peaklist_pos_swM_hcd_map.txt", sep = "\t")
+
+################################################################################
+## function to write the mapping results (genes to a list)
+write_to_list <- function(mapping, type = "HCD") {
+    uniq_trait <- unique(mapping[, "Trait"])
+    gene_l <- vector("list", length(uniq_trait))
+    ##uniq_trait_cut <- unlist(lapply(strsplit(uniq_trait, split = type), "[", 2))
+    names(gene_l) <- paste(type, uniq_trait, sep = "_")
+    for (i in 1:length(gene_l)) {
+        inds <- which(mapping[, "Trait"] == uniq_trait[i])
+        gene_l[[i]] <- mapping[inds, "Gene.stable.ID"]
+    }
+    return(gene_l)
+}
+
+## apply the function: create a list containing the genes mapped to a metabolite
+cid_pos_l <- write_to_list(cid_pos, "swM_CID")
+names(cid_pos_l) <- gsub(names(cid_pos_l), pattern = "PCID", replacement = "")
+cid_neg_l <- write_to_list(cid_neg, "swM_CID")
+names(cid_neg_l) <- gsub(names(cid_neg_l), pattern = "NCID", replacement = "")
+hcd_pos_l <- write_to_list(hcd_pos, "swM_HCD")
+names(hcd_pos_l) <- gsub(names(hcd_pos_l), pattern = "PHCD", replacement = "")
+hcd_neg_l <- write_to_list(hcd_neg, "swM_HCD")
+names(hcd_neg_l) <- gsub(names(hcd_neg_l), pattern = "NHCD", replacement = "")
+
+## load the spectra
+load("../results_MS2/ms2_spectra_MK_cid_pos.RData")
+load("../results_MS2/ms2_spectra_MK_hcd_pos.RData")
+load("../results_MS2/ms2_spectra_ML_cid_pos.RData")
+load("../results_MS2/ms2_spectra_ML_hcd_pos.RData")
+load("../results_MS2/ms2_spectra_swM_cid_pos.RData")
+load("../results_MS2/ms2_spectra_swM_hcd_pos.RData")
+load("../results_MS2/ms2_similarityMat_swM_hcd_pos.RData")
+similarityMat_swM_hcd_pos[1:10,1:10]
+
+################################################################################
+## create two matrices: 
+## in the first store if there is an overlap between the mapped genes
+## in the second store the similarity based on NDP if there is an 
+## overlap between the mapped genes
+
+## information on the mapping between the different data type
+## hcd_pos: mapping result of the traits (metabolites)
+## peaklist_pos_swM_hcd_map (tmp): MS1 with information on mz, rt, intensities 
+##      and corresponding MS2 spectra
+## similarityMat_swM_hcd_pos: similarity matrix of MS2 features, rownames and 
+##      colnames correspond to the spectra names
+hcd_pos[1:5, 1:5] ## PCHCD1203 --> refers to 1203 in peaklist_...[, "spectra"] (tmp)
+tmp[tmp[, "spectra"] == "1203", ] ## --> this is spectra 1203 in similarityMat
+length(unique(tmp[, "spectra"]))
+similarityMat_swM_hcd_pos[1203, 1:10]
+
+
+mat_sim <- mat <- matrix(nrow = length(hcd_pos_l), ncol = length(hcd_pos_l), 
+    dimnames = list(names(hcd_pos_l), names(hcd_pos_l)))
+mat[is.na(mat)] <- ""
+mat_sim[is.na(mat_sim)] <- 0
+
+## iterate through rows and cols of mat (these refer to the MS1/MS2 spectra) 
+## and check if there is an overlap in the mapped genes
+for (i in 1:nrow(mat)) {
+    row_i <- rownames(mat)[i] ## refers to XYZ in peaklist_MS1[, "spectra"]
+    row_i_cut <- lapply(strsplit(row_i, split = "_"), function(x) x[length(x)])
+    row_i_cut <- unlist(strsplit(row_i_cut[[1]], split = "[.]"))[[1]]
+    for (j in 1:ncol(mat)) {
+        col_j <- colnames(mat)[j]
+        col_j_cut <- lapply(strsplit(col_j, split = "_"), function(x) x[length(x)])
+        col_j_cut <- unlist(strsplit(col_j_cut[[1]], split = "[.]"))[[1]]
+        
+        ## obtain the similarity between the two MS2 features i and j, 
+        ## which were mapped to a genetic locus/loci
+        ## similarityMat_... is symmetric, thus it doesnt matter if to take 
+        ## [i, j] or [j, i]
+        sim_ij <- similarityMat_swM_hcd_pos[row_i_cut, col_j_cut]
+        
+        ## get the genes that are mapped to MS2 features i and j
+        genes_mapped_i <- hcd_pos_l[[row_i]]
+        genes_mapped_j <- hcd_pos_l[[col_j]]
+        
+        ## check if there is an overlap between genes_mapped_i and 
+        ## genes_mapped_j; if so, write the overlap in matrix mat and the 
+        ## similarity in the matrix mat_sim
+        if (any(genes_mapped_i %in% genes_mapped_j)) {
+            mat_sim[i, j] <- mat_sim[j, i] <- sim_ij
+            mat[i, j] <- mat[j, i] <- 
+                paste(intersect(genes_mapped_i, genes_mapped_j), collapse = ",")
+        }
+    }
+}
+
+## visualize with igraph
+library(igraph)
+
+g <- graph_from_adjacency_matrix(mat_sim, mode = "undirected", weighted = TRUE, diag = FALSE)
+plot(g, vertex.size = 0.1, vertex.label = NA)
+
+## write the files 
+write.table(mat_sim, file = "swM_hcd_pos_similarity_GWAS_adjacency.txt", quote = FALSE)
+write.table(mat, file = "swM_hcd_pos_overlap_GWAS_adjacency.txt", quote = FALSE)
