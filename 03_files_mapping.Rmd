@@ -1,5 +1,23 @@
+---
+title: "03_files_mapping.Rmd"
+author: "Thomas Naake"
+date: "05/22/2021"
+fig_width: 15
+fig_height: 10
+output:
+    html_document:
+    toc: true
+toc_depth: 3
+toc_float: TRUE
+theme: united
+number_sections: true
+highlight: tango
+---
+
+
+```{r}
 ## read the files that contain the mapping information
-setwd("/home/thomas/Documents/PhD/collaborations/Shijuan/")
+setwd("~/Projects/20210522_molNetworking_swM")
 
 options(stringsAsFactors = FALSE)
 cid_pos <- read.table("Pos_cid_Peak_SNP_locus_LD_candidate.genes.csv", 
@@ -11,9 +29,11 @@ hcd_pos <- read.table("Pos_hcd_Peak_SNP_locus_LD_candidate.genes.csv",
 hcd_neg <- read.table("Neg_hcd_Peak_SNP_locus_LD_candidate.genes.csv", 
     header = TRUE, sep = ",", quote = "`")
 
-setwd("/home/thomas/Projects/molNetworking_swM/results_MS1/")
+setwd("~/Projects/20210522_molNetworking_swM/results_MS1/")
 tmp <- read.table("peaklist_pos_swM_hcd_map.txt", sep = "\t")
+```
 
+```{r}
 ################################################################################
 ## function to write the mapping results (genes to a list)
 write_to_list <- function(mapping, type = "HCD") {
@@ -27,7 +47,9 @@ write_to_list <- function(mapping, type = "HCD") {
     }
     return(gene_l)
 }
+```
 
+```{r}
 ## apply the function: create a list containing the genes mapped to a metabolite
 cid_pos_l <- write_to_list(cid_pos, "swM_CID")
 names(cid_pos_l) <- gsub(names(cid_pos_l), pattern = "PCID", replacement = "")
@@ -47,25 +69,30 @@ load("../results_MS2/ms2_spectra_swM_cid_pos.RData")
 load("../results_MS2/ms2_spectra_swM_hcd_pos.RData")
 load("../results_MS2/ms2_similarityMat_swM_hcd_pos.RData")
 similarityMat_swM_hcd_pos[1:10,1:10]
+```
 
-################################################################################
-## create two matrices: 
-## in the first store if there is an overlap between the mapped genes
-## in the second store the similarity based on NDP if there is an 
-## overlap between the mapped genes
+Create two matrices: 
 
-## information on the mapping between the different data type
-## hcd_pos: mapping result of the traits (metabolites)
-## peaklist_pos_swM_hcd_map (tmp): MS1 with information on mz, rt, intensities 
-##      and corresponding MS2 spectra
-## similarityMat_swM_hcd_pos: similarity matrix of MS2 features, rownames and 
-##      colnames correspond to the spectra names
+- in the first store if there is an overlap between the mapped genes
+- in the second store the similarity based on NDP if there is an overlap 
+   between the mapped genes
+
+
+Information on the mapping between the different data type:
+ - `hcd_pos`: mapping result of the traits (metabolites)
+ - `peaklist_pos_swM_hcd_map` (`tmp`): MS1 with information on mz, rt, intensities 
+      and corresponding MS2 spectra
+ - `similarityMat_swM_hcd_pos`: similarity matrix of MS2 features, rownames and 
+    colnames correspond to the spectra names
+
+```{r}
 hcd_pos[1:5, 1:5] ## PCHCD1203 --> refers to 1203 in peaklist_...[, "spectra"] (tmp)
 tmp[tmp[, "spectra"] == "1203", ] ## --> this is spectra 1203 in similarityMat
 length(unique(tmp[, "spectra"]))
 similarityMat_swM_hcd_pos[1203, 1:10]
+```
 
-
+```{r}
 mat_sim <- mat <- matrix(nrow = length(hcd_pos_l), ncol = length(hcd_pos_l), 
     dimnames = list(names(hcd_pos_l), names(hcd_pos_l)))
 mat[is.na(mat)] <- ""
@@ -102,13 +129,46 @@ for (i in 1:nrow(mat)) {
         }
     }
 }
+```
 
-## visualize with igraph
+
+# Visualize with igraph
+```{r}
 library(igraph)
 
-g <- graph_from_adjacency_matrix(mat_sim, mode = "undirected", weighted = TRUE, diag = FALSE)
+mat_sim_red <- mat_sim
+mat_sim_red[mat_sim_red < 0.05] <- 0
+g <- graph_from_adjacency_matrix(mat_sim_red, mode = "undirected", weighted = TRUE, diag = FALSE)
 plot(g, vertex.size = 0.1, vertex.label = NA)
 
 ## write the files 
-write.table(mat_sim, file = "swM_hcd_pos_similarity_GWAS_adjacency.txt", quote = FALSE)
-write.table(mat, file = "swM_hcd_pos_overlap_GWAS_adjacency.txt", quote = FALSE)
+write.table(mat_sim, file = "swM_hcd_pos_similarity_GWAS_adjacency.txt", 
+    quote = FALSE, row.names = TRUE, col.names = TRUE)
+write.table(mat, file = "swM_hcd_pos_overlap_GWAS_adjacency.txt", 
+    quote = FALSE, row.names = TRUE, col.names = TRUE)
+```
+
+## check some of the metabolites
+
+quinic acid
+```{r}
+mat_sim["swM_HCD_88", c("swM_HCD_500", "swM_HCD_580", "swM_HCD_1298")]
+mat["swM_HCD_88", c("swM_HCD_500", "swM_HCD_580", "swM_HCD_1298")]
+```
+
+Kaempferol-3-O-rutinoside
+```{r}
+mat_sim["swM_HCD_1667", 
+        c("swM_HCD_1668", "swM_HCD_1613", "swM_HCD_1555", "swM_HCD_1823")]
+mat["swM_HCD_1667", 
+        c("swM_HCD_1668", "swM_HCD_1613", "swM_HCD_1555", "swM_HCD_1823")]
+```
+
+Naringenin
+```{r}
+mat_sim["swM_HCD_1664", 
+        c("swM_HCD_1667", "swM_HCD_1668", "swM_HCD_1613", "swM_HCD_1555", "swM_HCD_1823")]
+mat["swM_HCD_1664", 
+        c("swM_HCD_1667", "swM_HCD_1668", "swM_HCD_1613", "swM_HCD_1555", "swM_HCD_1823")]
+
+```

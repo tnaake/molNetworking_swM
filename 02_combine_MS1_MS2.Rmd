@@ -1,4 +1,22 @@
-## combine MS2 and MS1 
+---
+title: "02_combine_MS1_MS2.Rmd"
+author: "Thomas Naake"
+date: "05/22/2021"
+fig_width: 15
+fig_height: 10
+output:
+    html_document:
+    toc: true
+toc_depth: 3
+toc_float: TRUE
+theme: united
+number_sections: true
+highlight: tango
+---
+
+# Combine MS1 and MS2
+```{r}
+## combine MS1 and MS2 
 ## script to take MS2 spectra and trace back MS1 precursor ions
 ## extract the entries of these precursor ions in MS1 and write a truncated 
 ## peaklist 
@@ -32,7 +50,11 @@ pl_cid_pos_map <- map_precursor(spectra_swM_cid_pos, pl_pos_swM, ppm = 20,
 ## sweet maize HCD, positive
 pl_hcd_pos_map <- map_precursor(spectra_swM_hcd_pos, pl_pos_swM, ppm = 20, 
     rt_tol = 0.35, rt_ms1 = "seconds")
-    
+```
+
+
+Write the files
+```{r}
 ## write the peaklist table to a file
 setwd("/home/thomas/Projects/molNetworking_swM/results_MS1/")
 write.table(pl_cid_neg_map, file = "peaklist_neg_swM_cid_map.txt", sep = "\t",
@@ -43,3 +65,4 @@ write.table(pl_cid_pos_map, file = "peaklist_pos_swM_cid_map.txt", sep = "\t",
     quote = FALSE, dec = ".")
 write.table(pl_hcd_pos_map, file = "peaklist_pos_swM_hcd_map.txt", sep = "\t",
         quote = FALSE, dec = ".")
+```
