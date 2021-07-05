@@ -308,53 +308,76 @@ load("ms2_assembly_ML_hcd_pos.RData")
 load("ms2_assembly_swM_cid_pos.RData")
 load("ms2_assembly_swM_hcd_pos.RData")
 
-## 6) 
-## convert final deconvoluted spectra to Spectrum2 objects from MSnbase
-## load the MSnbase package
-library(MSnbase)
-
+# 6) collapse the spectra if the individual assemblies have close rt and 
+## precursor m/z values (assume they are identical)
 ## neg
-## kernel 
-spl_MK_cid_neg <- construct_Spectrum2(assembly_MK_cid_neg)
-spl_MK_hcd_neg <- construct_Spectrum2(assembly_MK_hcd_neg)
+assembly_collapsed_MK_cid_neg <- collapse_assembly(assembly_MK_cid_neg, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_MK_hcd_neg <- collapse_assembly(assembly_MK_hcd_neg, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_ML_cid_neg <- collapse_assembly(assembly_ML_cid_neg, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_ML_hcd_neg <- collapse_assembly(assembly_ML_hcd_neg, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_swM_cid_neg <- collapse_assembly(assembly_swM_cid_neg, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_swM_hcd_neg <- collapse_assembly(assembly_swM_hcd_neg, rt_dev = 0.1, mz_dev = 0.01)
 
-## leaf 
-spl_ML_cid_neg <- construct_Spectrum2(assembly_ML_cid_neg)
-spl_ML_hcd_neg <- construct_Spectrum2(assembly_ML_hcd_neg)
+## save
+setwd("/home/thomas/Projects/molNetworking_swM/results_MS2/")
+save(assembly_collapsed_MK_cid_neg, file="ms2_assembly_collapsed_MK_cid_neg.RData")
+save(assembly_collapsed_MK_hcd_neg, file="ms2_assembly_collapsed_MK_hcd_neg.RData")
+save(assembly_collapsed_ML_cid_neg, file="ms2_assembly_collapsed_ML_cid_neg.RData")
+save(assembly_collapsed_ML_hcd_neg, file="ms2_assembly_collapsed_ML_hcd_neg.RData")
+save(assembly_collapsed_swM_cid_neg, file="ms2_assembly_collapsed_swM_cid_neg.RData")
+save(assembly_collapsed_swM_hcd_neg, file="ms2_assembly_collapsed_swM_hcd_neg.RData")
 
-## sweet maize
-spl_swM_cid_neg <- construct_Spectrum2(assembly_swM_cid_neg)
-spl_swM_hcd_neg <- construct_Spectrum2(assembly_swM_hcd_neg)
+## load
+load("ms2_assembly_collapsed_MK_cid_neg.RData")
+load("ms2_assembly_collapsed_MK_hcd_neg.RData")
+load("ms2_assembly_collapsed_ML_cid_neg.RData")
+load("ms2_assembly_collapsed_ML_hcd_neg.RData")
+load("ms2_assembly_collapsed_swM_cid_neg.RData")
+load("ms2_assembly_collapsed_swM_hcd_neg.RData")
 
 ## pos
-## kernel 
-spl_MK_cid_pos <- construct_Spectrum2(assembly_MK_cid_pos)
-spl_MK_hcd_pos <- construct_Spectrum2(assembly_MK_hcd_pos)
+assembly_collapsed_MK_cid_pos <- collapse_assembly(assembly_MK_cid_pos, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_MK_hcd_pos <- collapse_assembly(assembly_MK_hcd_pos, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_ML_cid_pos <- collapse_assembly(assembly_ML_cid_pos, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_ML_hcd_pos <- collapse_assembly(assembly_ML_hcd_pos, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_swM_cid_pos <- collapse_assembly(assembly_swM_cid_pos, rt_dev = 0.1, mz_dev = 0.01)
+assembly_collapsed_swM_hcd_pos <- collapse_assembly(assembly_swM_hcd_pos, rt_dev = 0.1, mz_dev = 0.01)
 
-## leaf 
-spl_ML_cid_pos <- construct_Spectrum2(assembly_ML_cid_pos)
-spl_ML_hcd_pos <- construct_Spectrum2(assembly_ML_hcd_pos)
+## save
+save(assembly_collapsed_MK_cid_pos, file="ms2_assembly_collapsed_MK_cid_pos.RData")
+save(assembly_collapsed_MK_hcd_pos, file="ms2_assembly_collapsed_MK_hcd_pos.RData")
+save(assembly_collapsed_ML_cid_pos, file="ms2_assembly_collapsed_ML_cid_pos.RData")
+save(assembly_collapsed_ML_hcd_pos, file="ms2_assembly_collapsed_ML_hcd_pos.RData")
+save(assembly_collapsed_swM_cid_pos, file="ms2_assembly_collapsed_swM_cid_pos.RData")
+save(assembly_collapsed_swM_hcd_pos, file="ms2_assembly_collapsed_swM_hcd_pos.RData")
 
-## sweet maize
-spl_swM_cid_pos <- construct_Spectrum2(assembly_swM_cid_pos)
-spl_swM_hcd_pos <- construct_Spectrum2(assembly_swM_hcd_pos)
+## load
+load("ms2_assembly_collapsed_MK_cid_pos.RData")
+load("ms2_assembly_collapsed_MK_hcd_pos.RData")
+load("ms2_assembly_collapsed_ML_cid_pos.RData")
+load("ms2_assembly_collapsed_ML_hcd_pos.RData")
+load("ms2_assembly_collapsed_swM_cid_pos.RData")
+load("ms2_assembly_collapsed_swM_hcd_pos.RData")
 
-## 7)
-## create Spectra object from the list of Spectrum2 objects
+## 7) 
+## convert final deconvoluted spectra to Spectra objects from Spectra
+## load the Spectra package
+library(Spectra)
+
 ## neg 
-spectra_MK_cid_neg <- create_Spectra(spl_MK_cid_neg)
-spectra_MK_hcd_neg <- create_Spectra(spl_MK_hcd_neg)
-spectra_ML_cid_neg <- create_Spectra(spl_ML_cid_neg)
-spectra_ML_hcd_neg <- create_Spectra(spl_ML_hcd_neg)
-spectra_swM_cid_neg <- create_Spectra(spl_swM_cid_neg)
-spectra_swM_hcd_neg <- create_Spectra(spl_swM_hcd_neg)
+spectra_MK_cid_neg <- create_Spectra(assembly_collapsed_MK_cid_neg)
+spectra_MK_hcd_neg <- create_Spectra(assembly_collapsed_MK_hcd_neg)
+spectra_ML_cid_neg <- create_Spectra(assembly_collapsed_ML_cid_neg)
+spectra_ML_hcd_neg <- create_Spectra(assembly_collapsed_ML_hcd_neg)
+spectra_swM_cid_neg <- create_Spectra(assembly_collapsed_swM_cid_neg)
+spectra_swM_hcd_neg <- create_Spectra(assembly_collapsed_swM_hcd_neg)
 
-save(spl_MK_cid_neg, spectra_MK_cid_neg, file = "ms2_spectra_MK_cid_neg.RData")
-save(spl_MK_hcd_neg, spectra_MK_hcd_neg, file = "ms2_spectra_MK_hcd_neg.RData")
-save(spl_ML_cid_neg, spectra_ML_cid_neg, file = "ms2_spectra_ML_cid_neg.RData")
-save(spl_ML_hcd_neg, spectra_ML_hcd_neg, file = "ms2_spectra_ML_hcd_neg.RData")
-save(spl_swM_cid_neg, spectra_swM_cid_neg, file = "ms2_spectra_swM_cid_neg.RData")
-save(spl_swM_hcd_neg, spectra_swM_hcd_neg, file = "ms2_spectra_swM_hcd_neg.RData")
+save(spectra_MK_cid_neg, file = "ms2_spectra_MK_cid_neg.RData")
+save(spectra_MK_hcd_neg, file = "ms2_spectra_MK_hcd_neg.RData")
+save(spectra_ML_cid_neg, file = "ms2_spectra_ML_cid_neg.RData")
+save(spectra_ML_hcd_neg, file = "ms2_spectra_ML_hcd_neg.RData")
+save(spectra_swM_cid_neg, file = "ms2_spectra_swM_cid_neg.RData")
+save(spectra_swM_hcd_neg, file = "ms2_spectra_swM_hcd_neg.RData")
 load("ms2_spectra_MK_cid_neg.RData")
 load("ms2_spectra_MK_hcd_neg.RData")
 load("ms2_spectra_ML_cid_neg.RData")
@@ -363,19 +386,19 @@ load("ms2_spectra_swM_cid_neg.RData")
 load("ms2_spectra_swM_hcd_neg.RData")
 
 ## pos
-spectra_MK_cid_pos <- create_Spectra(spl_MK_cid_pos)
-spectra_MK_hcd_pos <- create_Spectra(spl_MK_hcd_pos)
-spectra_ML_cid_pos <- create_Spectra(spl_ML_cid_pos)
-spectra_ML_hcd_pos <- create_Spectra(spl_ML_hcd_pos)
-spectra_swM_cid_pos <- create_Spectra(spl_swM_cid_pos)
-spectra_swM_hcd_pos <- create_Spectra(spl_swM_hcd_pos)
+spectra_MK_cid_pos <- create_Spectra(assembly_collapsed_MK_cid_pos)
+spectra_MK_hcd_pos <- create_Spectra(assembly_collapsed_MK_hcd_pos)
+spectra_ML_cid_pos <- create_Spectra(assembly_collapsed_ML_cid_pos)
+spectra_ML_hcd_pos <- create_Spectra(assembly_collapsed_ML_hcd_pos)
+spectra_swM_cid_pos <- create_Spectra(assembly_collapsed_swM_cid_pos)
+spectra_swM_hcd_pos <- create_Spectra(assembly_collapsed_swM_hcd_pos)
 
-save(spl_MK_cid_pos, spectra_MK_cid_pos, file = "ms2_spectra_MK_cid_pos.RData")
-save(spl_MK_hcd_pos, spectra_MK_hcd_pos, file = "ms2_spectra_MK_hcd_pos.RData")
-save(spl_ML_cid_pos, spectra_ML_cid_pos, file = "ms2_spectra_ML_cid_pos.RData")
-save(spl_ML_hcd_pos, spectra_ML_hcd_pos, file = "ms2_spectra_ML_hcd_pos.RData")
-save(spl_swM_cid_pos, spectra_swM_cid_pos, file = "ms2_spectra_swM_cid_pos.RData")
-save(spl_swM_hcd_pos, spectra_swM_hcd_pos, file = "ms2_spectra_swM_hcd_pos.RData")
+save(spectra_MK_cid_pos, file = "ms2_spectra_MK_cid_pos.RData")
+save(spectra_MK_hcd_pos, file = "ms2_spectra_MK_hcd_pos.RData")
+save(spectra_ML_cid_pos, file = "ms2_spectra_ML_cid_pos.RData")
+save(spectra_ML_hcd_pos, file = "ms2_spectra_ML_hcd_pos.RData")
+save(spectra_swM_cid_pos, file = "ms2_spectra_swM_cid_pos.RData")
+save(spectra_swM_hcd_pos, file = "ms2_spectra_swM_hcd_pos.RData")
 
 load("ms2_spectra_MK_cid_pos.RData")
 load("ms2_spectra_MK_hcd_pos.RData")
@@ -384,17 +407,26 @@ load("ms2_spectra_ML_hcd_pos.RData")
 load("ms2_spectra_swM_cid_pos.RData")
 load("ms2_spectra_swM_hcd_pos.RData")
 
+
 ## 8) 
 ## calculate pair-wise similarities using the normalizeddotproduct
 ## neg
-library(MetCirc)
-similarityMat_MK_cid_neg <- compare_Spectra(spectra_MK_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_MK_hcd_neg <- compare_Spectra(spectra_MK_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_cid_neg <- compare_Spectra(spectra_ML_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_hcd_neg <- compare_Spectra(spectra_ML_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_cid_neg <- compare_Spectra(spectra_swM_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_hcd_neg <- compare_Spectra(spectra_swM_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+##library(MetCirc)
+similarityMat_MK_cid_neg <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_MK_hcd_neg <- compareSpectra(spectra_MK_hcd_neg, ppm = 20, FUN = ndotproduct())
+similarityMat_ML_cid_neg <- compareSpectra(spectra_ML_cid_neg, ppm = 20, FUN = ndotproduct())
+similarityMat_ML_hcd_neg <- compareSpectra(spectra_ML_hcd_neg, ppm = 20, FUN = ndotproduct())
+similarityMat_swM_cid_neg <- compareSpectra(spectra_swM_cid_neg, ppm = 20, FUN = ndotproduct())
+similarityMat_swM_hcd_neg <- compareSpectra(spectra_swM_hcd_neg, ppm = 20, FUN = ndotproduct())
 
+# similarityMat_MK_cid_neg <- compare_Spectra(spectra_MK_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_MK_hcd_neg <- compare_Spectra(spectra_MK_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_ML_cid_neg <- compare_Spectra(spectra_ML_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_ML_hcd_neg <- compare_Spectra(spectra_ML_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_swM_cid_neg <- compare_Spectra(spectra_swM_cid_neg, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_swM_hcd_neg <- compare_Spectra(spectra_swM_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
+
+## save
 save(similarityMat_MK_cid_neg, file = "ms2_similarityMat_MK_cid_neg.RData")
 save(similarityMat_MK_hcd_neg, file = "ms2_similarityMat_MK_hcd_neg.RData")
 save(similarityMat_ML_cid_neg, file = "ms2_similarityMat_ML_cid_neg.RData")
@@ -402,6 +434,7 @@ save(similarityMat_ML_hcd_neg, file = "ms2_similarityMat_ML_hcd_neg.RData")
 save(similarityMat_swM_cid_neg, file = "ms2_similarityMat_swM_cid_neg.RData")
 save(similarityMat_swM_hcd_neg, file = "ms2_similarityMat_swM_hcd_neg.RData")
 
+## load
 load("ms2_similarityMat_MK_cid_neg.RData")
 load("ms2_similarityMat_MK_hcd_neg.RData")
 load("ms2_similarityMat_ML_cid_neg.RData")
@@ -411,13 +444,21 @@ load("ms2_similarityMat_swM_hcd_neg.RData")
 
 
 ## pos 
-similarityMat_MK_cid_pos <- compare_Spectra(spectra_MK_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_MK_hcd_pos <- compare_Spectra(spectra_MK_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_cid_pos <- compare_Spectra(spectra_ML_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_ML_hcd_pos <- compare_Spectra(spectra_ML_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_cid_pos <- compare_Spectra(spectra_swM_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-similarityMat_swM_hcd_pos <- compare_Spectra(spectra_swM_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+similarityMat_MK_cid_pos <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_MK_hcd_pos <- compareSpectra(spectra_MK_hcd_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_ML_cid_pos <- compareSpectra(spectra_ML_cid_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_ML_hcd_pos <- compareSpectra(spectra_ML_hcd_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_swM_cid_pos <- compareSpectra(spectra_swM_cid_pos, ppm = 20, FUN = ndotproduct())
+similarityMat_swM_hcd_pos <- compareSpectra(spectra_swM_hcd_pos, ppm = 20, FUN = ndotproduct())
 
+# similarityMat_MK_cid_pos <- compare_Spectra(spectra_MK_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_MK_hcd_pos <- compare_Spectra(spectra_MK_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_ML_cid_pos <- compare_Spectra(spectra_ML_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_ML_hcd_pos <- compare_Spectra(spectra_ML_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_swM_cid_pos <- compare_Spectra(spectra_swM_cid_pos, fun=normalizeddotproduct, binSize=0.01)
+# similarityMat_swM_hcd_pos <- compare_Spectra(spectra_swM_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
+
+## save
 save(similarityMat_MK_cid_pos, file = "ms2_similarityMat_MK_cid_pos.RData")
 save(similarityMat_MK_hcd_pos, file = "ms2_similarityMat_MK_hcd_pos.RData")
 save(similarityMat_ML_cid_pos, file = "ms2_similarityMat_ML_cid_pos.RData")
@@ -425,6 +466,7 @@ save(similarityMat_ML_hcd_pos, file = "ms2_similarityMat_ML_hcd_pos.RData")
 save(similarityMat_swM_cid_pos, file = "ms2_similarityMat_swM_cid_pos.RData")
 save(similarityMat_swM_hcd_pos, file = "ms2_similarityMat_swM_hcd_pos.RData")
 
+## load
 load("ms2_similarityMat_MK_cid_pos.RData")
 load("ms2_similarityMat_MK_hcd_pos.RData")
 load("ms2_similarityMat_ML_cid_pos.RData")
