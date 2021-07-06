@@ -412,7 +412,7 @@ load("ms2_spectra_swM_hcd_pos.RData")
 ## calculate pair-wise similarities using the normalizeddotproduct
 ## neg
 library(MsCoreUtils)
-similarityMat_MK_cid_neg <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct)
+similarityMat_MK_cid_neg <- compareSpectra(spectra_MK_cid_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_cid_neg, file = "ms2_similarityMat_MK_cid_neg.RData")
 similarityMat_MK_hcd_neg <- compareSpectra(spectra_MK_hcd_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_hcd_neg, file = "ms2_similarityMat_MK_hcd_neg.RData")
