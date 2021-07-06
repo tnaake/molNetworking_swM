@@ -460,18 +460,30 @@ load("ms2_similarityMat_swM_hcd_pos.RData")
 ## visualize network 
 library(igraph)
 ## neg
-get_network_plot(similarityMat_MK_cid_neg, assembly_MK_cid_neg, file = "network_assembly_MK_cid_neg.pdf")
-get_network_plot(similarityMat_MK_hcd_neg, assembly_MK_hcd_neg, file = "network_assembly_MK_hcd_neg.pdf")
-get_network_plot(similarityMat_ML_cid_neg, assembly_ML_cid_neg, file = "network_assembly_ML_cid_neg.pdf")
-get_network_plot(similarityMat_ML_hcd_neg, assembly_ML_hcd_neg, file = "network_assembly_ML_hcd_neg.pdf")
-get_network_plot(similarityMat_swM_cid_neg, assembly_swM_cid_neg, file = "network_assembly_swM_cid_neg.pdf")
-get_network_plot(similarityMat_swM_hcd_neg, assembly_swM_hcd_neg, file = "network_assembly_swM_hcd_neg.pdf")
+get_network_plot(similarityMat_MK_cid_neg, assembly_collapsed_MK_cid_neg, 
+    file = "network_assembly_MK_cid_neg.pdf")
+get_network_plot(similarityMat_MK_hcd_neg, assembly_collapsed_MK_hcd_neg, 
+    file = "network_assembly_MK_hcd_neg.pdf")
+get_network_plot(similarityMat_ML_cid_neg, assembly_collapsed_ML_cid_neg, 
+    file = "network_assembly_ML_cid_neg.pdf")
+get_network_plot(similarityMat_ML_hcd_neg, assembly_collapsed_ML_hcd_neg, 
+    file = "network_assembly_ML_hcd_neg.pdf")
+get_network_plot(similarityMat_swM_cid_neg, assembly_collapsed_swM_cid_neg, 
+    file = "network_assembly_swM_cid_neg.pdf")
+get_network_plot(similarityMat_swM_hcd_neg, assembly_collapsed_swM_hcd_neg, 
+    file = "network_assembly_swM_hcd_neg.pdf")
 
 ## pos
-get_network_plot(similarityMat_MK_cid_pos, assembly_MK_cid_pos, file = "network_assembly_MK_cid_pos.pdf")
-get_network_plot(similarityMat_MK_hcd_pos, assembly_MK_hcd_pos, file = "network_assembly_MK_hcd_pos.pdf")
-get_network_plot(similarityMat_ML_cid_pos, assembly_ML_cid_pos, file = "network_assembly_ML_cid_pos.pdf")
-get_network_plot(similarityMat_ML_hcd_pos, assembly_ML_hcd_pos, file = "network_assembly_ML_hcd_pos.pdf")
-get_network_plot(similarityMat_swM_cid_pos, assembly_swM_cid_pos, file = "network_assembly_swM_cid_pos.pdf")
-get_network_plot(similarityMat_swM_hcd_pos, assembly_swM_hcd_pos, file = "network_assembly_swM_hcd_pos.pdf")
+get_network_plot(similarityMat_MK_cid_pos, assembly_collapsed_MK_cid_pos, 
+    file = "network_assembly_MK_cid_pos.pdf")
+get_network_plot(similarityMat_MK_hcd_pos, assembly_collapsed_MK_hcd_pos,
+    file = "network_assembly_MK_hcd_pos.pdf")
+get_network_plot(similarityMat_ML_cid_pos, assembly_collapsed_ML_cid_pos, 
+    file = "network_assembly_ML_cid_pos.pdf")
+get_network_plot(similarityMat_ML_hcd_pos, assembly_collapsed_ML_hcd_pos, 
+    file = "network_assembly_ML_hcd_pos.pdf")
+get_network_plot(similarityMat_swM_cid_pos, assembly_collapsed_swM_cid_pos,
+    file = "network_assembly_swM_cid_pos.pdf")
+get_network_plot(similarityMat_swM_hcd_pos, assembly_collapsed_swM_hcd_pos, 
+    file = "network_assembly_swM_hcd_pos.pdf")
 
