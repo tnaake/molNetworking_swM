@@ -411,27 +411,18 @@ load("ms2_spectra_swM_hcd_pos.RData")
 ## 8) 
 ## calculate pair-wise similarities using the normalizeddotproduct
 ## neg
-##library(MetCirc)
-similarityMat_MK_cid_neg <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_MK_hcd_neg <- compareSpectra(spectra_MK_hcd_neg, ppm = 20, FUN = ndotproduct())
-similarityMat_ML_cid_neg <- compareSpectra(spectra_ML_cid_neg, ppm = 20, FUN = ndotproduct())
-similarityMat_ML_hcd_neg <- compareSpectra(spectra_ML_hcd_neg, ppm = 20, FUN = ndotproduct())
-similarityMat_swM_cid_neg <- compareSpectra(spectra_swM_cid_neg, ppm = 20, FUN = ndotproduct())
-similarityMat_swM_hcd_neg <- compareSpectra(spectra_swM_hcd_neg, ppm = 20, FUN = ndotproduct())
-
-# similarityMat_MK_cid_neg <- compare_Spectra(spectra_MK_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_MK_hcd_neg <- compare_Spectra(spectra_MK_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_ML_cid_neg <- compare_Spectra(spectra_ML_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_ML_hcd_neg <- compare_Spectra(spectra_ML_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_swM_cid_neg <- compare_Spectra(spectra_swM_cid_neg, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_swM_hcd_neg <- compare_Spectra(spectra_swM_hcd_neg, fun=normalizeddotproduct, binSize=0.01)
-
-## save
+library(MsCoreUtils)
+similarityMat_MK_cid_neg <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_cid_neg, file = "ms2_similarityMat_MK_cid_neg.RData")
+similarityMat_MK_hcd_neg <- compareSpectra(spectra_MK_hcd_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_hcd_neg, file = "ms2_similarityMat_MK_hcd_neg.RData")
+similarityMat_ML_cid_neg <- compareSpectra(spectra_ML_cid_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_ML_cid_neg, file = "ms2_similarityMat_ML_cid_neg.RData")
+similarityMat_ML_hcd_neg <- compareSpectra(spectra_ML_hcd_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_ML_hcd_neg, file = "ms2_similarityMat_ML_hcd_neg.RData")
+similarityMat_swM_cid_neg <- compareSpectra(spectra_swM_cid_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_swM_cid_neg, file = "ms2_similarityMat_swM_cid_neg.RData")
+similarityMat_swM_hcd_neg <- compareSpectra(spectra_swM_hcd_neg, ppm = 20, FUN = ndotproduct)
 save(similarityMat_swM_hcd_neg, file = "ms2_similarityMat_swM_hcd_neg.RData")
 
 ## load
@@ -444,26 +435,17 @@ load("ms2_similarityMat_swM_hcd_neg.RData")
 
 
 ## pos 
-similarityMat_MK_cid_pos <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_MK_hcd_pos <- compareSpectra(spectra_MK_hcd_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_ML_cid_pos <- compareSpectra(spectra_ML_cid_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_ML_hcd_pos <- compareSpectra(spectra_ML_hcd_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_swM_cid_pos <- compareSpectra(spectra_swM_cid_pos, ppm = 20, FUN = ndotproduct())
-similarityMat_swM_hcd_pos <- compareSpectra(spectra_swM_hcd_pos, ppm = 20, FUN = ndotproduct())
-
-# similarityMat_MK_cid_pos <- compare_Spectra(spectra_MK_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_MK_hcd_pos <- compare_Spectra(spectra_MK_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_ML_cid_pos <- compare_Spectra(spectra_ML_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_ML_hcd_pos <- compare_Spectra(spectra_ML_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_swM_cid_pos <- compare_Spectra(spectra_swM_cid_pos, fun=normalizeddotproduct, binSize=0.01)
-# similarityMat_swM_hcd_pos <- compare_Spectra(spectra_swM_hcd_pos, fun=normalizeddotproduct, binSize=0.01)
-
-## save
+similarityMat_MK_cid_pos <- compareSpectra(spectra_MK_cid_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_cid_pos, file = "ms2_similarityMat_MK_cid_pos.RData")
+similarityMat_MK_hcd_pos <- compareSpectra(spectra_MK_hcd_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_MK_hcd_pos, file = "ms2_similarityMat_MK_hcd_pos.RData")
+similarityMat_ML_cid_pos <- compareSpectra(spectra_ML_cid_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_ML_cid_pos, file = "ms2_similarityMat_ML_cid_pos.RData")
+similarityMat_ML_hcd_pos <- compareSpectra(spectra_ML_hcd_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_ML_hcd_pos, file = "ms2_similarityMat_ML_hcd_pos.RData")
+similarityMat_swM_cid_pos <- compareSpectra(spectra_swM_cid_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_swM_cid_pos, file = "ms2_similarityMat_swM_cid_pos.RData")
+similarityMat_swM_hcd_pos <- compareSpectra(spectra_swM_hcd_pos, ppm = 20, FUN = ndotproduct)
 save(similarityMat_swM_hcd_pos, file = "ms2_similarityMat_swM_hcd_pos.RData")
 
 ## load
