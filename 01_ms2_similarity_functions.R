@@ -172,49 +172,6 @@ collapse_assembly <- function(assembly, rt_dev, mz_dev) {
     return(assembly)
 }
 
-
-#' #' @name createRefSpectra
-#' #' 
-#' #' @title Create reference spectra from alignment file
-#' #' 
-#' #' @description The alignment object `aln` given by MS-DIAL contains per
-#' #' aligned spectrum a reference spectrum. The function `createRefSpectra`
-#' #' extracts these spectra and returns a list of matrices containing the 
-#' #' m/z values and the corresponding intensities. 
-#' #' 
-#' #' @param aln alignment object (`data.frame`) containing reference spectrum in 
-#' #' the column `MS.MS.spectrum`, as given by MS-DIAL
-#' #' 
-#' #' @details `createRefSpectra` assigns names to the list in the following 
-#' #' format `"ID_id_RT_mz"`, where `id` is the ID of the aligned spectrum taken
-#' #' from the column `"Alignment.ID"`, `RT` is the retention time in minutes
-#' #' taken from the column `"Average.Rt.min."` and `mz` is the m/z value taken 
-#' #' from the column `"Average.Mz"`.
-#' #' 
-#' #' @return list of matrices
-#' #' 
-#' #' @author Thomas Naake <thomasnaake@@googlemail.com> 
-#' #' 
-#' #' @examples
-#' #' createRefSpectra(aln_neg)
-#' #' createRefSpectra(aln_pos)
-#' createRefSpectra <- function(aln) {
-#'     ## retrieve the column "MSMS.spectrum" from each entry in i_spectra,
-#'     ## this column contains information on the peaks and the 
-#'     ## corresponding intensities, strsplit the entries and write them 
-#'     ## to a matrix
-#'     msms <- strsplit(aln[, "MS.MS.spectrum"], split = " ")
-#'     msms <- lapply(msms, function(y) {
-#'         tmp <- strsplit(y, split = ":")
-#'         tmp <- do.call("rbind", tmp)
-#'         mode(tmp) <- "numeric"
-#'         tmp
-#'     })
-#'     names(msms) <- paste("Spectrum_ID", aln[, "Alignment.ID"], 
-#'                          aln[, "Average.Rt.min."], aln[, "Average.Mz"], sep = "_")
-#'     return(msms)
-#' }
-
 #' @name binAssembly
 #'
 #' @title Bin an assembly
