@@ -106,7 +106,7 @@ assemblySpectra <- function(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), aln=aln,
     
     ## construct names for res
     names(res) <- paste(sample_name, aln[, "Alignment.ID"], 
-        aln[, "Average.Rt.min."], aln[, "Average.Mz"], sep = "_")
+                        aln[, "Average.Rt.min."], aln[, "Average.Mz"], sep = "_")
     
     ## truncate res that it only contains the entries that are not NULL
     inds_keep <- unlist(lapply(res, function(x) !is.null(x)))
@@ -115,60 +115,73 @@ assemblySpectra <- function(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), aln=aln,
     return(res)
 }
 
-#' @name createRefSpectra
+
+#' @name collapse_assembly
 #' 
-#' @title Create reference spectra from alignment file
+#' @title Collapse assembly
 #' 
-#' @description The alignment object `aln` given by MS-DIAL contains per
-#' aligned spectrum a reference spectrum. The function `createRefSpectra`
-#' extracts these spectra and returns a list of matrices containing the 
-#' m/z values and the corresponding intensities. 
+#' @description 
 #' 
-#' @param aln alignment object (`data.frame`) containing reference spectrum in 
-#' the column `MS.MS.spectrum`, as given by MS-DIAL
+#' @param assembly
+#' @param rt_dev rt deviance
+#' @param mz_dev
 #' 
-#' @details `createRefSpectra` assigns names to the list in the following 
-#' format `"ID_id_RT_mz"`, where `id` is the ID of the aligned spectrum taken
-#' from the column `"Alignment.ID"`, `RT` is the retention time in minutes
-#' taken from the column `"Average.Rt.min."` and `mz` is the m/z value taken 
-#' from the column `"Average.Mz"`.
+#' @details 
 #' 
 #' @return list of matrices
 #' 
 #' @author Thomas Naake <thomasnaake@@googlemail.com> 
 #' 
 #' @examples
-#' createRefSpectra(aln_neg)
-#' createRefSpectra(aln_pos)
-createRefSpectra <- function(aln) {
-    ## retrieve the column "MSMS.spectrum" from each entry in i_spectra,
-    ## this column contains information on the peaks and the 
-    ## corresponding intensities, strsplit the entries and write them 
-    ## to a matrix
-    msms <- strsplit(aln[, "MS.MS.spectrum"], split = " ")
-    msms <- lapply(msms, function(y) {
-        tmp <- strsplit(y, split = ":")
-        tmp <- do.call("rbind", tmp)
-        mode(tmp) <- "numeric"
-        tmp
-    })
-    names(msms) <- paste("Spectrum_ID", aln[, "Alignment.ID"], 
-        aln[, "Average.Rt.min."], aln[, "Average.Mz"], sep = "_")
-    return(msms)
+#' collapse_assembly
+collapse_assembly <- function(assembly, rt_dev, mz_dev) {
+    
+    names_assembly <- names(assembly)
+    names_assembly <- strsplit(names_assembly, split = "_")
+    rt <- lapply(names_assembly, "[", 4)
+    rt <- as.numeric(unlist(rt))
+    mz <- lapply(names_assembly, "[", 5)
+    mz <- as.numeric(unlist(mz))
+    
+    ## iterate through list of features and calculate deviances
+    for (i in 1:length(mz)) {
+        mz_devs <- abs(mz[i] - mz)
+        rt_devs <- abs(rt[i] - rt)
+        inds <- which(mz_devs <= mz_dev & rt_devs <= rt_dev)
+        
+        ## remove i from the vector of indices that are within the boundaries
+        inds <- inds[inds != i]
+        
+        ## combine all the matching assemblies into one
+        assembly_comb <- Reduce(rbind, assembly[c(i, inds)])
+        assembly[[i]] <- assembly_comb
+        
+        ## remove the entries of the assemblies that were matched
+        assembly[inds] <- lapply(inds, function(x) matrix(nrow = 0, ncol = 2))
+    }
+    
+    ## remove the empty entries
+    assembly_nrows <- unlist(lapply(assembly, nrow))
+    assembly <- assembly[assembly_nrows != 0]
+    
+    ## bin the mz values (this will collapse features with mz values < 0.01
+    ## together by aggregating via the sum of intensities)
+    assembly <- lapply(assembly, function(x) 
+        binAssembly(x, tol = 0.01, fun = "sum"))
+    
+    return(assembly)
 }
 
-#' @name binSpectra
+#' @name binAssembly
 #'
-#' @title Bin a spectra
+#' @title Bin an assembly
 #'
 #' @description 
-#' `binSpectra` combines peaks that are close to each other
+#' `binAssembly` combines peaks that are close to each other
 #'
-#' @param spectra matrix, the first column contains information on the 
+#' @param assembly matrix, the first column contains information on the 
 #' m/z and the second column contains information on the intensity
-#'
 #' @param tol numeric, tolerance parameter
-#'
 #' @param fun character, either "max" or "sum"
 #'
 #' @details
@@ -185,16 +198,18 @@ createRefSpectra <- function(aln) {
 #' @author Thomas Naake \email{thomasnaake@@googlemail.com}
 #'
 #' @examples
-#' binSpectra(spectra, tol=0.01, fun="sum")
-binSpectra <- function(spectra, tol=0.01, fun=c("max", "sum")) {
+#' binAssembly(assembly, tol=0.01, fun="sum")
+binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
     
-    ##if (!is.matrix(spectra)) stop("spectra is not a matrix")
+    if (!is.matrix(assembly)) stop("assembly is not a matrix")
     ## match arguments for fun
     fun <- match.arg(fun)
     
-    ## if spectra only contains > 2 do the binning, otherwise return spectra
-    if (nrow(spectra) > 2) {
-        frag_s <- spectra[,1]
+    ## if assembly only contains > 2 do the binning, otherwise return assembly
+    if (nrow(assembly) > 2) {
+        ## order the assembly according to mz
+        assembly <- assembly[order(assembly[, 1]), ]
+        frag_s <- assembly[, 1]
         steps <- (max(frag_s) - min(frag_s)) / tol
         if (steps > 2) {
             bins <- tapply(frag_s, cut(frag_s, steps), mean)
@@ -206,30 +221,30 @@ binSpectra <- function(spectra, tol=0.01, fun=c("max", "sum")) {
             ## iterate through duplicated peaks and combine them
             for (j in names(which(table(inds) != 1))) {
                 inds_dup <- which(inds == j)
-                spectra_dup <- spectra[inds_dup,]
+                assembly_dup <- assembly[inds_dup,]
                 
                 ## either use max or sum the intensities
                 if (fun == "max") {
-                    spectra[inds_dup, 1] <- spectra_dup[which.max(spectra_dup[, 2]), 1]
-                    spectra[inds_dup, 2] <- max(spectra_dup[, 2])    
+                    assembly[inds_dup, 1] <- assembly_dup[which.max(assembly_dup[, 2]), 1]
+                    assembly[inds_dup, 2] <- max(assembly_dup[, 2])    
                     ## set all except the ones with the highest intensity to NA
-                    spectra[inds_dup[-which.max(spectra_dup[, 2])], ] <- NA 
+                    assembly[inds_dup[-which.max(assembly_dup[, 2])], ] <- NA 
                 } 
                 if (fun == "sum") {
-                    spectra[inds_dup, 1] <- median(spectra_dup[, 1])
-                    spectra[inds_dup, 2] <- sum(spectra_dup[, 2])   
+                    assembly[inds_dup, 1] <- median(assembly_dup[, 1])
+                    assembly[inds_dup, 2] <- sum(assembly_dup[, 2])   
                     ## set all except the first one to NA
-                    spectra[inds_dup[-1],] <- NA 
+                    assembly[inds_dup[-1], ] <- NA 
                 }
             }
             ## remove NA values
-            spectra <- spectra[!is.na(spectra[,1]), ]
+            assembly <- assembly[!is.na(assembly[, 1]), ]
         } else {
-            spectra <- matrix(c(frag_s[which.max(spectra[, 2])], max(spectra[, 2])), 
-                ncol = 2)
+            assembly <- matrix(c(frag_s[which.max(assembly[, 2])], max(assembly[, 2])), 
+                              ncol = 2)
         }
     }
-    return(spectra)
+    return(assembly)
 }
 
 #' @name deconvolute
@@ -260,7 +275,7 @@ binSpectra <- function(spectra, tol=0.01, fun=c("max", "sum")) {
 #' sp <- list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50)
 #' deconvolute(spectra=sp, tol=0.01)
 deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50), 
-    tol = 0.01) {
+                        tol = 0.01) {
     
     ## rbind spectra
     spectra <- do.call("rbind", spectra)
@@ -279,72 +294,52 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50),
 }
 
 
-#' @name construct_Spectrum2
+#' @name create_Spectra
 #'
 #' @description
-#' The function `construct_Spectrum2` retrieves the relevant information from 
+#' The function `create_Spectra` retrieves the relevant information from 
 #' the `assembly` (retention time of precursor, m/z of precursor and m/z 
-#' and intensities of the fragments) and creates a list of `Spectrum2` objects.
+#' and intensities of the fragments) and creates a `Spectra` object from this
+#' list.
 #'
 #' @param assembly list of matrices
 #'
 #' @details
-#' The function `construct_Spectrum2` takes as an argument a list of
+#' The function `create_Spectra` takes as an argument a list of
 #' matrices. Each matrix contains in its first column m/z values and in the 
 #' second column intensity values.
-#' 'construct_Spectrum2` retrieves retention time, precursorMZ, m/z of peaks and 
+#' `create_spectra` retrieves retention time, precursorMZ, m/z of peaks and 
 #' corresponding intensities from the assembled spectrum.
-#'
-#' @author Thomas Naake \email{thomasnaake@@googlemail.com}
-#'
-#' @return `list` of `Spectrum2` objects
-#'
-#' @examples 
-#' construct_Spectrum(assembly)
-construct_Spectrum2 <- function(assembly) {
-    
-    ## get retention time
-    rt <- unlist(lapply(strsplit(names(assembly), split="_"), "[", 4))  
-    rt <- as.numeric(rt)
-    ## get precursor m/z
-    prec_mz <- unlist(lapply(strsplit(names(assembly), split="_"), "[", 5))
-    prec_mz <- as.numeric(prec_mz)
-    ## get m/z values and corresponding intensities
-    mz <- lapply(assembly, function(x) x[, 1])
-    int <- lapply(assembly, function(x) x[, 2])
-    ## create Spectrum2 objects with the corresponding information
-    lapply(1:length(assembly), function(x) new("Spectrum2", 
-        rt=rt[x], precursorMz=prec_mz[x], mz=mz[[x]], intensity=int[[x]]))
-}
-
-
-#' @name create_Spectra
-#'
-#' @description
-#' The function `create_Spectra` creates  a `Spectra` object from a list of 
-#' `Spectrum2` objects.
-#'
-#' @param spl `list` of `Spectrum2` objects
-#'
-#' @details
-#' The function `create_Spectra` creates the `Spectra` object from a list of 
-#' `Spectrum2` objects. It binds a `DataFrame` object as `elementMetadata` with 
-#' the columns `"precursorMz"` containing the m/z values of the precursor ion, 
-#' `"rt"` containing the retention time and `"show"` set to `TRUE` for all 
-#' `Spectrum2` entries.
 #'
 #' @author Thomas Naake \email{thomasnaake@@googlemail.com}
 #'
 #' @return `Spectra` object
 #'
 #' @examples
-#' create_Spectra(spl)
-create_Spectra <- function(spl) {
-    MSnbase::Spectra(spl, 
-        elementMetadata=S4Vectors::DataFrame(
-            precursorMz = unlist(lapply(spl, function(x) x@precursorMz)),
-            rt = unlist(lapply(spl, function(x) x@rt)), 
-            show=rep(TRUE, length(spl)))) 
+#' create_Spectra(assembly)
+create_Spectra <- function(assembly) {
+    
+    names_a <- names(assembly)
+    rt <- unlist(lapply(strsplit(names_a, split="_"), "[", 4))  
+    rt <- as.numeric(rt)
+    ## get precursor m/z
+    prec_mz <- unlist(lapply(strsplit(names_a, split="_"), "[", 5))
+    prec_mz <- as.numeric(prec_mz)
+    
+    ## get m/z values and corresponding intensities
+    mz <- lapply(assembly, function(x) x[, 1])
+    intensity <- lapply(assembly, function(x) x[, 2])
+    
+    spd <- DataFrame(msLevel = c(2L), rtime = rt, precursorMz = prec_mz)
+    spd$mz <- mz
+    spd$intensity <- intensity
+    
+    data <- Spectra::Spectra(spd)
+    spd_names <- lapply(strsplit(names_a, "_"), "[", 1:3)
+    spd_names <- unlist(lapply(spd_names, paste, collapse = "_"))
+    data$spectrum_id <- spd_names
+    
+    return(data)
 }
 
 
