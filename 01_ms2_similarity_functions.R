@@ -41,9 +41,10 @@
 #' sp <- list(MK_hcd30, MK_hcd40, MK_hcd50)
 #' cols_aln <- c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50")
 #' assemblySpectra(spectra=sp, aln=aln, cols_aln=cols_aln, sample_name="MK_HCD")
-assemblySpectra <- function(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), aln=aln,
-                            cols_aln=c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
-                            sample_name="MK_HCD", tol=0.01) {
+assemblySpectra <- function(spectra = list(MK_hcd30, MK_hcd40, MK_hcd50), 
+    aln = aln,
+    cols_aln = c("mixMK.ddm2.HCD30", "mixMK.ddms2.HCD40", "mixMK.ddms2.HCD50"),
+    sample_name = "MK_HCD", tol = 0.01) {
     
     
     ## create list of vector nrow(aln) that will store the final deconvoluted 
@@ -79,9 +80,9 @@ assemblySpectra <- function(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), aln=aln,
             ## to a matrix
             i_msms <- lapply(i_spectra, function(x) {
                 if (!is.null(x)) {
-                    msms <- strsplit(x[, "MSMS.spectrum"], split=" ")[[1]]  
-                    msms <- lapply(msms, function(y) strsplit(y, split=":"))
-                    msms <- matrix(unlist(msms), ncol=2, byrow=TRUE)
+                    msms <- strsplit(x[, "MSMS.spectrum"], split = " ")[[1]]  
+                    msms <- lapply(msms, function(y) strsplit(y, split = ":"))
+                    msms <- matrix(unlist(msms), ncol = 2, byrow = TRUE)
                     mode(msms) <- "numeric"
                     return(msms)
                 }
@@ -92,7 +93,7 @@ assemblySpectra <- function(spectra=list(MK_hcd30, MK_hcd40, MK_hcd50), aln=aln,
             ## together
             i_msms_bin <- lapply(i_msms, function(x) {
                 if (!is.null(x)) {
-                    binSpectra(x, tol=tol, fun = "sum")   
+                    binSpectra(x, tol = tol, fun = "sum")   
                 }
             })
             
@@ -205,13 +206,22 @@ binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
     ## match arguments for fun
     fun <- match.arg(fun)
     
+<<<<<<< Updated upstream
     ## if assembly only contains > 2 do the binning, otherwise return assembly
     if (nrow(assembly) > 2) {
         ## order the assembly according to mz
         assembly <- assembly[order(assembly[, 1]), ]
         frag_s <- assembly[, 1]
+=======
+    ## if spectra only contains > 2 do the binning, otherwise return spectra
+    if (nrow(spectra) > 2) {
+        
+        frag_s <- spectra[,1]
+>>>>>>> Stashed changes
         steps <- (max(frag_s) - min(frag_s)) / tol
+        
         if (steps > 2) {
+            
             bins <- tapply(frag_s, cut(frag_s, steps), mean)
             bins <- bins[!is.na(bins)]
             ## find nearest ones and sum all intensities up 
@@ -220,6 +230,7 @@ binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
             
             ## iterate through duplicated peaks and combine them
             for (j in names(which(table(inds) != 1))) {
+                
                 inds_dup <- which(inds == j)
                 assembly_dup <- assembly[inds_dup,]
                 
@@ -238,10 +249,19 @@ binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
                 }
             }
             ## remove NA values
+<<<<<<< Updated upstream
             assembly <- assembly[!is.na(assembly[, 1]), ]
         } else {
             assembly <- matrix(c(frag_s[which.max(assembly[, 2])], max(assembly[, 2])), 
                               ncol = 2)
+=======
+            spectra <- spectra[!is.na(spectra[,1]), ]
+            
+        } else {
+            spectra <- matrix(
+                c(frag_s[which.max(spectra[, 2])], max(spectra[, 2])), 
+                ncol = 2)
+>>>>>>> Stashed changes
         }
     }
     return(assembly)
@@ -284,10 +304,11 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50),
     spectra <- spectra[order(spectra[,1]),]
     
     ## convert to matrix
-    if (!is.matrix(spectra)) spectra <- matrix(spectra, ncol = 2, byrow=TRUE)
+    if (!is.matrix(spectra)) 
+        spectra <- matrix(spectra, ncol = 2, byrow = TRUE)
     
     ## bin: take the max from the same corresonding peak
-    spectra <- binSpectra(spectra, tol=tol, fun="max")
+    spectra <- binSpectra(spectra, tol = tol, fun = "max")
     
     ## return
     return(spectra)
@@ -320,10 +341,17 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50),
 create_Spectra <- function(assembly) {
     
     names_a <- names(assembly)
+<<<<<<< Updated upstream
     rt <- unlist(lapply(strsplit(names_a, split="_"), "[", 4))  
     rt <- as.numeric(rt)
     ## get precursor m/z
     prec_mz <- unlist(lapply(strsplit(names_a, split="_"), "[", 5))
+=======
+    rt <- unlist(lapply(strsplit(names_a, split = "_"), "[", 4))  
+    rt <- as.numeric(rt)
+    ## get precursor m/z
+    prec_mz <- unlist(lapply(strsplit(names_a, split = "_"), "[", 5))
+>>>>>>> Stashed changes
     prec_mz <- as.numeric(prec_mz)
     
     ## get m/z values and corresponding intensities
@@ -404,14 +432,14 @@ get_network_plot <- function(similarityMat, assembly, threshold = 0.05, file) {
 #'
 #' @examples
 #' map_precursor(spectra, peaklist, ppm = 20, rt_tol = 0.15)
-map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15, rt_ms1 = c("seconds", "minutes")) {
+map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15, 
+    rt_ms1 = c("seconds", "minutes")) {
     
     
     if (rt_ms1 == "seconds") {
         peaklist[, "rt"] <- peaklist[, "rt"] / 60
     }
     
-    res <- vector("list", nrow(peaklist))
     ## create vector that stores retention time of MS1 
     ms1_rt <- peaklist[, "rt"]
     
@@ -433,7 +461,8 @@ map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15, rt_ms1 = c
         pl <- pl[ms1_mz >= lower & ms1_mz <= upper, ]
         
         ## add information of the mapped Spectrum2
-        if (nrow(pl) > 0) pl <- cbind(spectra=names(spectra)[x], pl)
+        if (nrow(pl) > 0) 
+            pl <- cbind(spectra = names(spectra)[x], pl)
         
         ## return   
         return(pl)
