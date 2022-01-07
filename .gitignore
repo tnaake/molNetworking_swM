@@ -1,0 +1,13 @@
+
+*.mtd2
+*.arf2
+*.dcl
+*.pai2
+results_MS1/.Rhistory
+*.pdf
+results_MS2/.Rhistory
+*.RData
+*.xls
+*.txt
+*.csv
+*.xlsx
