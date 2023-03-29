@@ -93,7 +93,7 @@ assemblySpectra <- function(spectra = list(MK_hcd30, MK_hcd40, MK_hcd50),
             ## together
             i_msms_bin <- lapply(i_msms, function(x) {
                 if (!is.null(x)) {
-                    binSpectra(x, tol = tol, fun = "sum")   
+                    binAssembly(x, tol = tol, fun = "sum")   
                 }
             })
             
@@ -293,7 +293,7 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50),
         spectra <- matrix(spectra, ncol = 2, byrow = TRUE)
     
     ## bin: take the max from the same corresonding peak
-    spectra <- binSpectra(spectra, tol = tol, fun = "max")
+    spectra <- binAssembly(spectra, tol = tol, fun = "max")
     
     ## return
     return(spectra)
