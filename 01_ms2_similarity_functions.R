@@ -206,18 +206,12 @@ binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
     ## match arguments for fun
     fun <- match.arg(fun)
     
-<<<<<<< Updated upstream
     ## if assembly only contains > 2 do the binning, otherwise return assembly
     if (nrow(assembly) > 2) {
         ## order the assembly according to mz
         assembly <- assembly[order(assembly[, 1]), ]
         frag_s <- assembly[, 1]
-=======
-    ## if spectra only contains > 2 do the binning, otherwise return spectra
-    if (nrow(spectra) > 2) {
-        
-        frag_s <- spectra[,1]
->>>>>>> Stashed changes
+
         steps <- (max(frag_s) - min(frag_s)) / tol
         
         if (steps > 2) {
@@ -249,19 +243,10 @@ binAssembly <- function(assembly, tol = 0.01, fun=c("max", "sum")) {
                 }
             }
             ## remove NA values
-<<<<<<< Updated upstream
             assembly <- assembly[!is.na(assembly[, 1]), ]
         } else {
             assembly <- matrix(c(frag_s[which.max(assembly[, 2])], max(assembly[, 2])), 
                               ncol = 2)
-=======
-            spectra <- spectra[!is.na(spectra[,1]), ]
-            
-        } else {
-            spectra <- matrix(
-                c(frag_s[which.max(spectra[, 2])], max(spectra[, 2])), 
-                ncol = 2)
->>>>>>> Stashed changes
         }
     }
     return(assembly)
@@ -341,17 +326,10 @@ deconvolute <- function(spectra=list(i_msms_hcd30, i_msms_hcd40, i_msms_hcd50),
 create_Spectra <- function(assembly) {
     
     names_a <- names(assembly)
-<<<<<<< Updated upstream
-    rt <- unlist(lapply(strsplit(names_a, split="_"), "[", 4))  
-    rt <- as.numeric(rt)
-    ## get precursor m/z
-    prec_mz <- unlist(lapply(strsplit(names_a, split="_"), "[", 5))
-=======
     rt <- unlist(lapply(strsplit(names_a, split = "_"), "[", 4))  
     rt <- as.numeric(rt)
     ## get precursor m/z
     prec_mz <- unlist(lapply(strsplit(names_a, split = "_"), "[", 5))
->>>>>>> Stashed changes
     prec_mz <- as.numeric(prec_mz)
     
     ## get m/z values and corresponding intensities
