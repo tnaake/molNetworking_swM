@@ -29,7 +29,7 @@ pl_neg_swM <- read.table("peaklist_neg_log_tic_batch_final_swM.txt", sep = "\t")
 ## pos
 pl_pos_swM <- read.table("peaklist_pos_log_tic_batch_final_swM.txt", sep = "\t")
 
-## load Spectrum2 and Spectra objects
+## load Spectra objects
 setwd("/home/thomas/Projects/molNetworking_swM/results_MS2/")
 load("ms2_spectra_swM_cid_neg.RData")
 load("ms2_spectra_swM_hcd_neg.RData")
@@ -42,6 +42,7 @@ pl_cid_neg_map <- map_precursor(spectra_swM_cid_neg, pl_neg_swM, ppm = 20,
 ## sweet maize HCD, negative
 pl_hcd_neg_map <- map_precursor(spectra_swM_hcd_neg, pl_neg_swM, ppm = 20, 
     rt_tol = 0.20, rt_ms1 = "seconds")
+
 ## take for positive mode a higher rt_tol since retention time deviation
 ## occured for one sample
 ## sweet maize CID, positive
