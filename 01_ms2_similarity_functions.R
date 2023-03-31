@@ -424,8 +424,8 @@ map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15,
     pl_map <- lapply(seq_along(spectra), function(x) {
         
         ## retrieve precursorMz and retention time of Spectra 
-        mz <- spectra[[x]]@precursorMz
-        rt <- spectra[[x]]@rt
+        mz <- spectra[x]$precursorMz
+        rt <- spectra[x]$rtime
         
         ## restrict the search space based on retention time
         pl <- peaklist[ms1_rt >= (rt - rt_tol) & ms1_rt <= (rt + rt_tol),]
@@ -440,7 +440,7 @@ map_precursor <- function(spectra, peaklist, ppm = 20, rt_tol = 0.15,
         
         ## add information of the mapped Spectrum2
         if (nrow(pl) > 0) 
-            pl <- cbind(spectra = names(spectra)[x], pl)
+            pl <- cbind(spectra = spectra[x]@backend@spectraData$spectrum_id, pl)
         
         ## return   
         return(pl)
