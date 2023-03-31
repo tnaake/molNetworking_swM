@@ -500,7 +500,7 @@ save(similarityMat_swM_cid_pos, file = "ms2_similarityMat_swM_cid_pos.RData")
 
 similarityMat_swM_hcd_pos <- Spectra::compareSpectra(spectra_swM_hcd_pos, 
     MAPFUN = joinPeaks, ppm = 20, FUN = ndotproduct)
-rownames(spectra_swM_hcd_pos) <- colnames(spectra_swM_hcd_pos) <- spectra_swM_hcd_pos@backend@spectraData[["spectrum_id"]]
+rownames(similarityMat_swM_hcd_pos) <- colnames(similarityMat_swM_hcd_pos) <- spectra_swM_hcd_pos@backend@spectraData[["spectrum_id"]]
 save(similarityMat_swM_hcd_pos, file = "ms2_similarityMat_swM_hcd_pos.RData")
 ```
 
