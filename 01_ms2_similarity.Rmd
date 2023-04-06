@@ -447,7 +447,7 @@ rownames(similarityMat_ML_cid_neg) <- colnames(similarityMat_ML_cid_neg) <- spec
 save(similarityMat_ML_cid_neg, file = "ms2_similarityMat_ML_cid_neg.RData")
 
 similarityMat_ML_hcd_neg <- Spectra::compareSpectra(x = spectra_ML_hcd_neg, 
-    MAPFUN = joinPeaks, ppm = 20, FUN=ndotproduct)
+    MAPFUN = joinPeaks, ppm = 20, FUN = ndotproduct)
 rownames(similarityMat_ML_hcd_neg) <- colnames(similarityMat_ML_hcd_neg) <- spectra_ML_hcd_neg@backend@spectraData[["spectrum_id"]]
 save(similarityMat_ML_hcd_neg, file = "ms2_similarityMat_ML_hcd_neg.RData")
 
